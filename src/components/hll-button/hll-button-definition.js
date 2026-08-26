@@ -50,7 +50,7 @@ export const BASE_DEFINITION = {
       0.5,
       0.5
     ],
-    "cursorFocusRadius": 2.5,
+    "cursorFocusRadius": 1.4,
     "cursorFocusEdge": 0.5,
     "cursorRadius": 0.3,
     "cursorEdge": 0.5,
