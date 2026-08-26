@@ -1,7 +1,8 @@
-// lightfx-runtime.js — LightFX runtime (procedural light/blur effect engine).
-// Self-contained: only dependency is `three`. Embedded verbatim from LightFX
-// Studio (Studio/src/lightfx/runtime.js) so this component has no dependency
-// on the Studio repo itself.
+// hll-button-runtime.js — LightFX runtime (procedural light/blur effect
+// engine) that renders the HLL Button's shape, gradient, blur and cursor-lens
+// glow. Self-contained: only dependency is `three`. Embedded verbatim from
+// LightFX Studio (src/lightfx/runtime.js) so this file has no dependency on
+// the Studio repo itself — re-copy it from there if the engine changes.
 import * as THREE from 'three';
 
 /*

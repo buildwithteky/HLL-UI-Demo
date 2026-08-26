@@ -1,11 +1,17 @@
-// definition.js — the "HLL Button" preset, as saved/exported from LightFX
-// Studio (the "HLL Button" entry under Presets in the Studio UI). This is
-// the single source of truth for the preset's configuration: shape, base/hover
-// shader params, interaction/cursor-lens tuning, and the label's own text
-// styling. Re-export this file's `DEFINITION` verbatim from Studio any time
-// the preset there changes, rather than hand-editing values here, so the
-// Demo and Studio never drift apart.
-export const DEFINITION = {
+// hll-button-definition.js — the structural definition behind every HLL
+// Button variant: shape, effect toggles, interaction/cursor-lens tuning,
+// label typography, and render mode. This is copied verbatim from the "HLL
+// Button" preset in LightFX Studio's Export panel — it is the single source
+// of truth for everything about the button EXCEPT its per-page gradient,
+// which lives in hll-button-variants.js instead (see that file's comment for
+// why colors are split out).
+//
+// Re-copy this file from Studio any time the base preset's shape, effects,
+// interaction, typography, or render mode change there. The `params.base` /
+// `params.hover` color fields below are what Studio's own preset currently
+// uses (the "enterprise" look) — hll-button-variants.js overrides them per
+// variant at mount time; it never touches anything else in this object.
+export const BASE_DEFINITION = {
   "box": {
     "auto": false,
     "height": 36,
