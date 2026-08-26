@@ -1,34 +1,11 @@
 body {
   margin: 0;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
   background: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-/* Host-level reset only — neutralizes native <button> chrome so nothing but
-   the LightFX effect and its label are visible. Label styling itself (size,
-   weight, color, hover color) is driven entirely by the preset's own
-   `text` config via CSS variables — see App.jsx and studio.css's identical
-   `.fx-label` / `#playground:hover .fx-label` mechanism. */
-.hll-button {
-  appearance: none;
-  -webkit-appearance: none;
-  border: none;
-  outline: none;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.hll-button__label {
-  display: inline-block;
-  color: var(--fx-label-color, #191919);
-  transition: color 0.25s ease;
-}
-
-.hll-button:hover .hll-button__label {
-  color: var(--fx-label-hover-color, var(--fx-label-color, #191919));
 }
