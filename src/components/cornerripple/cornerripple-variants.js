@@ -22,35 +22,32 @@ export const cornerRippleVariants = cva('corner-ripple', {
   },
 });
 
-const HLL_PALETTE = ['#00c7d1', '#299eeb', '#fbcc4d', '#fc8a9e', '#ff5ba3', '#ffc76b'];
-
 export const VARIANT_GRADIENTS = {
-  // The HLL service pages all share this same 6-stop palette (only the
-  // ripple/gradient params in cornerripple-definition.js's VARIANT_PARAMS
-  // differ between them) — listed as all 6 stops rather than 2-3 so
-  // buildPalette passes them through unchanged instead of resampling.
+  // Each HLL service page ships its own 6-stop palette — listed as all 6
+  // stops rather than 2-3 so buildPalette passes them through unchanged
+  // instead of resampling.
   'hll-application': {
-    colors: HLL_PALETTE,
+    colors: ['#ddeac2', '#d8f3ee', '#9fade0', '#c7abe2', '#c7436a', '#322527'],
     usage: 'HLL application page',
   },
   'hll-foundation': {
-    colors: HLL_PALETTE,
+    colors: ['#6fa5c3', '#b39cd8', '#bb3e91', '#2d1515', '#752424', '#981b1b'],
     usage: 'HLL Foundation page',
   },
   'hll-trust-and-governance': {
-    colors: HLL_PALETTE,
+    colors: ['#cff7f0', '#9ae46c', '#93ee68', '#8fde2b', '#c57226', '#642626'],
     usage: 'HLL Trust and Governance page',
   },
   'hll-people-and-policy': {
-    colors: HLL_PALETTE,
+    colors: ['#eb1414', '#f45d5d', '#ea3e3e', '#cc2424', '#e34f4f', '#6d1d1d'],
     usage: 'HLL People and Policy page',
   },
   'hll-ontology': {
-    colors: HLL_PALETTE,
+    colors: ['#d37fe1', '#a67ecd', '#b591d9', '#c4a4e5', '#ffffff', '#ffffff'],
     usage: 'HLL Ontology page',
   },
   'hll-ai': {
-    colors: HLL_PALETTE,
+    colors: ['#ad7cdf', '#adb7eb', '#d3eee3', '#e2f4f8', '#fbfefe', '#fcfefb'],
     usage: 'HLL AI page',
   },
 };
