@@ -1,0 +1,11 @@
+/* ripple.css — the ripple host element's layout, outside the WebGL canvas
+   itself. Static, hand-authored classes — this is what ripple-variants.js's
+   cva() composes, nothing is generated here. Self-contained: copy this file
+   alongside the component's .js/.jsx files into any React project. */
+
+.ripple {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}

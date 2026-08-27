@@ -1,61 +1,32 @@
 // Ripple.jsx — React wrapper around the "HLL Ripples" p5.js sketch, exported
 // as a standalone HTML page (index.html/sketch.js/style.css) by another
 // tool; shader.vert/shader.frag are that export's original shader files,
-// kept as-is. The shader, uniforms and baked params/palette below are
-// copied verbatim from the exported sketch.js — nothing about the visual
-// behavior was changed.
+// kept as-is.
 //
-// The only adaptation is structural: p5's original global-mode sketch
-// (preload/setup/draw as window-level functions, loadShader() fetching the
-// .vert/.frag files over the network) doesn't fit a component that can
-// mount/unmount and can't rely on a global namespace, so this uses p5's
-// instance mode instead, and loads the shader source via Vite's `?raw`
-// import (already exact GLSL text) instead of a network fetch.
+// Same one-component-many-variants approach as HLLButton: a `variant` prop
+// selects one of the design system's predefined gradients (see
+// ripple-variants.js, copied from hll-button-variants.js's
+// VARIANT_GRADIENTS) — everything else (motion, bands, softness, origin
+// layout) comes from ripple-definition.js and is shared by every variant
+// unchanged. There is no per-page ripple component and no per-usage color
+// props for everyday use; `palette` exists as an explicit one-off override,
+// same role as HLLButton's `gradient` prop.
+//
+// p5's original global-mode sketch (preload/setup/draw as window-level
+// functions, loadShader() fetching the .vert/.frag files over the network)
+// doesn't fit a component that can mount/unmount and can't rely on a global
+// namespace, so this uses p5's instance mode instead, and loads the shader
+// source via Vite's `?raw` import (already exact GLSL text) instead of a
+// network fetch.
 import { useEffect, useRef } from 'react';
 import p5 from 'p5';
 import vertSrc from './shader.vert?raw';
 import fragSrc from './shader.frag?raw';
+import { MAX_RIPPLES, BASE_PARAMS, TAP_RIPPLE_MODE } from './ripple-definition.js';
+import { rippleVariants, resolveVariantPalette, buildPalette } from './ripple-variants.js';
+import './ripple.css';
 
-const MAX_RIPPLES = 32;
-
-// baked parameters (were the live slider values)
-const params = {
-  bands: 5,
-  speed: 0.9,
-  flow: 0.2,
-  shear: 0.3,
-  shape: 0,
-  rippleNoise: 0,
-  rippleSpacing: 0.96,
-  ox: 0.5,
-  oy: 0.47,
-  motion: 1,
-  soft: 4,
-  scale: 5.5,
-  rot: 0,
-  wobble: 0.08,
-  saturation: 0,
-  vibrancy: 0.66,
-  contrast: 1.15,
-};
-
-// baked palette (resolved from either the custom palette or the selected
-// gradient set)
-const paletteColors = [
-  [0.22, 0.49, 0.84],
-  [0.47, 0.53, 0.9],
-  [0.63, 0.51, 0.75],
-  [0.75, 0.49, 0.78],
-  [0.95, 0.54, 0.52],
-  [0.97, 0.15, 0.17],
-];
-const usingCustomPalette = false;
-
-// tap-ripple state (baked from export time, still interactive if tap mode
-// was on)
-const tapRippleMode = false;
-
-function sketch(p) {
+function sketch(p, getPalette) {
   let shaderProgram;
   let ripplePoints = [];
 
@@ -89,7 +60,7 @@ function sketch(p) {
     p.background(0);
     p.shader(shaderProgram);
 
-    const spacedPoints = getSpacedRipplePoints(params.rippleSpacing);
+    const spacedPoints = getSpacedRipplePoints(BASE_PARAMS.rippleSpacing);
 
     const rippleArray = [];
     for (let i = 0; i < MAX_RIPPLES; i++) {
@@ -101,41 +72,41 @@ function sketch(p) {
       }
     }
 
-    shaderProgram.setUniform('uTapRippleMode', tapRippleMode);
+    shaderProgram.setUniform('uTapRippleMode', TAP_RIPPLE_MODE);
     shaderProgram.setUniform('uRippleCount', spacedPoints.length);
     shaderProgram.setUniform('uRipplePoints', rippleArray);
 
     shaderProgram.setUniform('uTime', p.millis() * 0.001);
     shaderProgram.setUniform('uResolution', [p.width, p.height]);
 
-    shaderProgram.setUniform('uBands', params.bands);
-    shaderProgram.setUniform('uSpeed', params.speed);
-    shaderProgram.setUniform('uFlowStrength', params.flow);
-    shaderProgram.setUniform('uShearStrength', params.shear);
-    shaderProgram.setUniform('uRippleShape', params.shape);
-    shaderProgram.setUniform('uRippleNoise', params.rippleNoise);
-    shaderProgram.setUniform('uRippleGap', params.rippleSpacing);
+    shaderProgram.setUniform('uBands', BASE_PARAMS.bands);
+    shaderProgram.setUniform('uSpeed', BASE_PARAMS.speed);
+    shaderProgram.setUniform('uFlowStrength', BASE_PARAMS.flow);
+    shaderProgram.setUniform('uShearStrength', BASE_PARAMS.shear);
+    shaderProgram.setUniform('uRippleShape', BASE_PARAMS.shape);
+    shaderProgram.setUniform('uRippleNoise', BASE_PARAMS.rippleNoise);
+    shaderProgram.setUniform('uRippleGap', BASE_PARAMS.rippleSpacing);
 
-    shaderProgram.setUniform('uOrigin', [params.ox, params.oy]);
+    shaderProgram.setUniform('uOrigin', [BASE_PARAMS.ox, BASE_PARAMS.oy]);
 
-    shaderProgram.setUniform('uGradientMotion', params.motion);
-    shaderProgram.setUniform('uGradientSoftness', params.soft);
-    shaderProgram.setUniform('uGradientScale', params.scale);
-    shaderProgram.setUniform('uGradientRotation', params.rot);
-    shaderProgram.setUniform('uGradientWobble', params.wobble);
+    shaderProgram.setUniform('uGradientMotion', BASE_PARAMS.motion);
+    shaderProgram.setUniform('uGradientSoftness', BASE_PARAMS.soft);
+    shaderProgram.setUniform('uGradientScale', BASE_PARAMS.scale);
+    shaderProgram.setUniform('uGradientRotation', BASE_PARAMS.rot);
+    shaderProgram.setUniform('uGradientWobble', BASE_PARAMS.wobble);
 
-    shaderProgram.setUniform('uSaturation', params.saturation);
-    shaderProgram.setUniform('uVibrancy', params.vibrancy);
-    shaderProgram.setUniform('uContrast', params.contrast);
+    shaderProgram.setUniform('uSaturation', BASE_PARAMS.saturation);
+    shaderProgram.setUniform('uVibrancy', BASE_PARAMS.vibrancy);
+    shaderProgram.setUniform('uContrast', BASE_PARAMS.contrast);
 
-    shaderProgram.setUniform('uPalette', paletteColors.flat());
-    shaderProgram.setUniform('uUseCustomPalette', usingCustomPalette);
+    shaderProgram.setUniform('uPalette', getPalette().flat());
+    shaderProgram.setUniform('uUseCustomPalette', false);
 
     p.rect(-p.width / 2, -p.height / 2, p.width, p.height);
   };
 
   p.mousePressed = () => {
-    if (!tapRippleMode) return;
+    if (!TAP_RIPPLE_MODE) return;
 
     ripplePoints.push({
       x: p.mouseX / p.width,
@@ -152,13 +123,29 @@ function sketch(p) {
   };
 }
 
-export default function Ripple() {
+export default function Ripple({ variant = 'enterprise', palette, className, style }) {
   const hostRef = useRef(null);
+  const resolvePalette = () =>
+    palette && palette.length >= 2 ? buildPalette(palette) : resolveVariantPalette(variant);
+  const paletteRef = useRef(resolvePalette());
+
+  // Keep the palette read by the shader up to date without tearing down and
+  // restarting the p5 instance (a live uniform, not a remount) — same
+  // "don't rebuild the effect for a value it can read live" spirit as
+  // HLLButton's hover/active state living outside React.
+  paletteRef.current = resolvePalette();
 
   useEffect(() => {
-    const instance = new p5(sketch, hostRef.current);
+    const instance = new p5((p) => sketch(p, () => paletteRef.current), hostRef.current);
     return () => instance.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div ref={hostRef} className="ripple-host" />;
+  return (
+    <div
+      ref={hostRef}
+      className={rippleVariants({ variant, className })}
+      style={style}
+    />
+  );
 }
