@@ -1,0 +1,84 @@
+/* bottom-shader.css — the BottomShader component's host/canvas layout.
+   Static, hand-authored classes — this is what bottom-shader-variants.js's
+   cva() composes, nothing is generated here. Self-contained: copy this file
+   alongside the component's .js/.jsx files into any React project.
+
+   Same engine as Shader (see BottomShader.jsx), and the canvas itself is
+   sized identically to Shader's — the full viewport (100vw x 100vh) — so
+   its resolution/aspect ratio and every effect computed from them (vignette
+   shape, sine warp, shatter, bokeh) render pixel-for-pixel the same as
+   Shader's. Only the host clips it down to the bottom slice: fixed to the
+   viewport's bottom edge, `overflow: hidden`, with the canvas positioned
+   `bottom: 0` inside it so the *bottom* of the full-viewport render is what
+   shows through (matching where Shader's own action concentrates — see its
+   vignette/bokeh pointer-follow — rather than an arbitrary crop). Override
+   `position`/`bottom`/`width`/`height` via `style`/`className` if a given
+   usage needs a different slice. */
+
+.bottom-shader {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 50vh;
+  background: #ffffff;
+}
+
+.bottom-shader__canvas {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* The canvas is 2x the host's height (100vh vs. the host's 50vh), so the
+     host's visible top edge sits exactly at the 50% mark of the canvas's
+     own height. Fading the mask from there produces a soft top edge that
+     blends into the host's white background instead of the effect cutting
+     off abruptly — rather than an opacity fade on the whole canvas (which
+     would dim the visible gradient/glow throughout), this only fades the
+     narrow band right at the crop line. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 50%,
+    black 65%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 50%,
+    black 65%,
+    black 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* Same inert/dimmed treatment as shader.css's `.shader--disabled` — the
+   canvas isn't even mounted at this point (see BottomShader.jsx), so this
+   just keeps the plain background from reading as a broken/empty effect. */
+.bottom-shader--disabled {
+  opacity: 0.5;
+}
+
+/* Variant classes exist as CSS hooks for cva()'s API and for consumer
+   overrides (e.g. analytics selectors) — the glow's actual gradient comes
+   from bottom-shader-variants.js + the WebGL texture, not from these empty
+   rule bodies. */
+.bottom-shader--services,
+.bottom-shader--industries,
+.bottom-shader--engagement,
+.bottom-shader--about,
+.bottom-shader--contact,
+.bottom-shader--hll-ai,
+.bottom-shader--hll-trust,
+.bottom-shader--hll-foundation,
+.bottom-shader--hll-ontology,
+.bottom-shader--hll-people,
+.bottom-shader--hll-application {
+}
