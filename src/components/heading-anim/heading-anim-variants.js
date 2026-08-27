@@ -9,13 +9,16 @@ import { cva } from 'class-variance-authority';
 export const headingAnimVariants = cva('gradient-reveal-text', {
   variants: {
     variant: {
-      enterprise: 'gradient-reveal-text--enterprise',
-      services: 'gradient-reveal-text--services',
-      industries: 'gradient-reveal-text--industries',
+      'hll-ai': 'gradient-reveal-text--hll-ai',
+      'hll-trust': 'gradient-reveal-text--hll-trust',
+      'hll-foundation': 'gradient-reveal-text--hll-foundation',
+      'hll-ontology': 'gradient-reveal-text--hll-ontology',
+      'hll-people': 'gradient-reveal-text--hll-people',
+      'hll-application': 'gradient-reveal-text--hll-application',
     },
   },
   defaultVariants: {
-    variant: 'enterprise',
+    variant: 'hll-ai',
   },
 });
 
@@ -25,24 +28,40 @@ export const headingAnimVariants = cva('gradient-reveal-text', {
  * copied into another project on its own.
  */
 export const VARIANT_GRADIENTS = {
-  enterprise: {
-    colors: ['#10b981', '#3b82f6'],
-    usage: 'Enterprise page/navigation',
+  // Per-service variants: same fixed 2-color gradients as
+  // hll-button-variants.js's / shader-variants.js's VARIANT_GRADIENTS, so
+  // this heading matches HLLButton/Shader/BottomShader/Ripple/CornerRipple
+  // for each service.
+  'hll-ai': {
+    colors: ['#3773FF', '#BCA6D6'],
+    usage: 'hll-ai service',
   },
-  services: {
-    colors: ['#ff80ca', '#8786e6', '#007fd2'],
-    usage: 'Services page/navigation',
+  'hll-trust': {
+    colors: ['#129562', '#7CBAAA'],
+    usage: 'hll-trust service',
   },
-  industries: {
-    colors: ['#fa4288', '#ff836b', '#fee253'],
-    usage: 'Industries page/navigation',
+  'hll-foundation': {
+    colors: ['#FF5A1E', '#CC8B93'],
+    usage: 'hll-foundation service',
+  },
+  'hll-ontology': {
+    colors: ['#7455FF', '#FFB26A'],
+    usage: 'hll-ontology service',
+  },
+  'hll-people': {
+    colors: ['#FF9042', '#FFEEC7'],
+    usage: 'hll-people service',
+  },
+  'hll-application': {
+    colors: ['#FF1F1F', '#72AAFF'],
+    usage: 'hll-application service',
   },
 };
 
 export const HEADING_ANIM_VARIANT_NAMES = Object.keys(VARIANT_GRADIENTS);
 
 export function resolveVariantColors(variant) {
-  const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS.enterprise;
+  const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS['hll-ai'];
   return gradient.colors;
 }
 

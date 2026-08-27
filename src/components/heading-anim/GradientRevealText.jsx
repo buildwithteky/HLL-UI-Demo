@@ -5,7 +5,7 @@ import { headingAnimVariants, resolveVariantColors, hexToRgba } from './heading-
  * GradientRevealText — the design system's single reusable heading reveal.
  *
  * Same one-component-many-variants approach as HLLButton/Ripple: a
- * `variant` prop selects one of the design system's predefined 2-3 color
+ * `variant` prop selects one of the design system's per-service 2-color
  * gradients (see heading-anim-variants.js, copied from
  * hll-button-variants.js's VARIANT_GRADIENTS) — the reveal timing, easing,
  * blur and glow are shared by every variant unchanged. `colors` exists as
@@ -16,7 +16,7 @@ import { headingAnimVariants, resolveVariantColors, hexToRgba } from './heading-
  * layout chrome — just the text element itself.
  *
  * Usage:
- *   <GradientRevealText text="Intelligence and Imagination" variant="services" />
+ *   <GradientRevealText text="Intelligence and Imagination" variant="hll-trust" />
  *   <GradientRevealText text="Hello" replayKey={someChangingValue} />
  */
 
@@ -45,7 +45,7 @@ function buildGlowShadow(colors, alphas) {
 
 export default function GradientRevealText({
   text = 'Intelligence and Imagination',
-  variant = 'enterprise',
+  variant = 'hll-ai',
   colors,
   autoPlay = true,
   replayKey,
