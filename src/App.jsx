@@ -6,7 +6,7 @@ import { Ripple } from './components/ripple';
 import { CornerRipple } from './components/cornerripple';
 import { OurPromise } from './components/our-promise';
 import { Tag } from './components/tag';
-import { Shader } from './components/shader';
+import { Shader, MenuTriggerOverlay } from './components/shader';
 import { BottomShader } from './components/bottom-shader';
 import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.jsx';
 
@@ -134,7 +134,14 @@ export default function App() {
           defaults, same as the commented-out usage above) sitting directly
           on top of it at the bottom of the viewport. See
           bottom-shader/ServicesScrollDemo.jsx. */}
-      <ServicesScrollDemo />
+      {/* <ServicesScrollDemo /> */}
+
+      {/* Services.png as a fullscreen backdrop with Shader mounted on top
+          of it exactly as it renders by default — opaque, no blend mode.
+          Fixed fullscreen (shader.css's `.shader`, inset: 0), so only one
+          fullscreen usage (this or the plain Shader list above) should be
+          mounted at a time. See shader/MenuTriggerOverlay.jsx. */}
+      <MenuTriggerOverlay variant="services" />
     </>
   );
 }

@@ -1,5 +1,6 @@
 export { default as Shader } from './Shader.jsx';
 export { default } from './Shader.jsx';
+export { default as MenuTriggerOverlay } from './MenuTriggerOverlay.jsx';
 export {
   shaderVariants,
   VARIANT_GRADIENTS,

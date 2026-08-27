@@ -1,0 +1,18 @@
+/* menu-trigger-overlay.css — layout for MenuTriggerOverlay.jsx.
+   `.menu-trigger-overlay__image` is real, in-flow page content (like
+   bottom-shader/ServicesScrollDemo.jsx's own image) — NOT `position:
+   fixed`, or there'd be nothing on the page to scroll. Shader's own host
+   (shader.css's `.shader`) is already `position: fixed; inset: 0`, so it
+   stays pinned to the viewport on its own while the image scrolls
+   underneath it. */
+
+.menu-trigger-overlay {
+  position: relative;
+  width: 100%;
+}
+
+.menu-trigger-overlay__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}

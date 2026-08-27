@@ -28,6 +28,13 @@ import './shader.css';
 export default function Shader({
   variant = 'services',
   colors,
+  // Defaults to the original opaque, full-bleed BASE_SETTINGS — every
+  // existing usage keeps its current look. Pass a clone with
+  // `background.transparent: true` (see shader-runtime.js's
+  // `transparentBg`) for a usage that needs whatever's behind the canvas
+  // to show through instead, e.g. MenuTriggerOverlay.jsx layering this
+  // over Services.png.
+  settings = BASE_SETTINGS,
   pauseOnDoubleClick = true,
   disabled = false,
   className,
@@ -44,16 +51,21 @@ export default function Shader({
   // wiring up its hover/click listeners while disabled.
   useEffect(() => {
     if (disabled) return undefined;
+    // Cloned once per mount so shader-runtime.js's live mutation of the
+    // settings object it's handed never mutates a caller-supplied object
+    // or the shared BASE_SETTINGS default — other Shader instances
+    // importing the same constant would otherwise see it drift too.
+    const liveSettings = JSON.parse(JSON.stringify(settings));
     const fx = createShaderFX(canvasRef.current, {
       colors: resolvedColors,
-      settings: BASE_SETTINGS,
+      settings: liveSettings,
       multiplier: MULTIPLIER,
       blueNoiseSize: BLUE_NOISE_SIZE,
       pauseOnDoubleClick,
     });
     return () => fx.dispose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, colors?.join(','), pauseOnDoubleClick, disabled]);
+  }, [variant, colors?.join(','), pauseOnDoubleClick, disabled, settings]);
 
   return (
     <div
