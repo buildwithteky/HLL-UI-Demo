@@ -1,0 +1,105 @@
+/* hll-outline-button.css — everything the HLL Outline Button needs outside
+   the WebGL canvas itself: native <button> reset, focus/disabled/loading
+   states, and the label's hover-color transition. Static, hand-authored
+   classes — this is what hll-outline-button-variants.js's cva() composes,
+   nothing is generated here. Self-contained: copy this file alongside the
+   component's .js/.jsx files into any React project, no build-tool/Tailwind
+   config required. Structurally identical to hll-button.css — only the
+   class/custom-property names differ, kept separate so the two components
+   don't collide if used side by side. */
+
+.hll-outline-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.hll-outline-button:focus-visible {
+  outline: 2px solid var(--hll-outline-label-color, #191919);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.hll-outline-button--disabled,
+.hll-outline-button:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.hll-outline-button--loading {
+  cursor: progress;
+  pointer-events: none;
+}
+
+/* The label is a DOM overlay above the canvas (z-index 1, see
+   HLLOutlineButton.jsx) so it stays crisp regardless of the shader's
+   blur/bloom. Its color transitions on :hover the same way Studio's own
+   preview does. Always uppercase, regular weight — same rule as
+   hll-button.css's `.hll-button__label`. */
+.hll-outline-button__label {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  color: var(--hll-outline-label-color, #191919);
+  text-transform: uppercase;
+  font-weight: 400;
+  transition: color 0.25s ease;
+}
+
+.hll-outline-button:hover .hll-outline-button__label {
+  color: var(--hll-outline-label-hover-color, var(--hll-outline-label-color, #191919));
+}
+
+.hll-outline-button__spinner {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  margin-left: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  vertical-align: middle;
+  animation: hll-outline-button-spin 0.6s linear infinite;
+}
+
+@keyframes hll-outline-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Size/variant classes exist as CSS hooks for cva()'s API and for consumer
+   overrides (e.g. analytics selectors) — the button's actual box dimensions
+   (hll-outline-button-variants.js's SIZE_SCALE applied to
+   hll-outline-button-definition.js's `box`) and gradient/glow are driven
+   from JS (HLLOutlineButton.jsx + the shader), not by these empty rule
+   bodies. */
+.hll-outline-button--sm,
+.hll-outline-button--md,
+.hll-outline-button--lg,
+.hll-outline-button--services,
+.hll-outline-button--industries,
+.hll-outline-button--engagement,
+.hll-outline-button--about,
+.hll-outline-button--contact,
+.hll-outline-button--hll-ai,
+.hll-outline-button--hll-trust,
+.hll-outline-button--hll-foundation,
+.hll-outline-button--hll-ontology,
+.hll-outline-button--hll-people,
+.hll-outline-button--hll-application {
+}
