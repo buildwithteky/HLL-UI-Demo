@@ -15,8 +15,28 @@
 import { useEffect, useRef } from 'react';
 import { createShaderFX } from '../shader/shader-runtime.js';
 import { BASE_SETTINGS, MULTIPLIER, BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
+import {
+  HOST_HEIGHT,
+  CANVAS_HEIGHT_MULTIPLIER,
+  FADE_HOLD_END,
+  FADE_SOLID_START,
+  FADE_COLOR,
+} from './bottom-shader-definition.js';
 import { bottomShaderVariants, resolveVariantColors } from './bottom-shader-variants.js';
 import './bottom-shader.css';
+
+// This crop's own layout knobs (height, canvas-to-host ratio, fade stops/
+// color — see bottom-shader-definition.js), fed to bottom-shader.css as CSS
+// custom properties. A caller's own `style` is spread after, so it can
+// still override any of these (or `height`/`position`/etc. directly) same
+// as before.
+const LAYOUT_STYLE = {
+  '--bottom-shader-height': HOST_HEIGHT,
+  '--bottom-shader-canvas-height': `${CANVAS_HEIGHT_MULTIPLIER * 100}%`,
+  '--bottom-shader-fade-hold-end': `${FADE_HOLD_END}%`,
+  '--bottom-shader-fade-solid-start': `${FADE_SOLID_START}%`,
+  '--bottom-shader-fade-color': FADE_COLOR,
+};
 
 export default function BottomShader({
   variant = 'services',
@@ -50,7 +70,7 @@ export default function BottomShader({
   return (
     <div
       className={bottomShaderVariants({ variant, disabled: disabled || undefined, className })}
-      style={style}
+      style={{ ...LAYOUT_STYLE, ...style }}
       {...rest}
     >
       <canvas ref={canvasRef} className="bottom-shader__canvas" />

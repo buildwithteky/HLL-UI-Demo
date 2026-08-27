@@ -1,17 +1,27 @@
 /* bottom-shader.css — the BottomShader component's host/canvas layout.
    Static, hand-authored classes — this is what bottom-shader-variants.js's
    cva() composes, nothing is generated here. Self-contained: copy this file
-   alongside the component's .js/.jsx files into any React project.
+   alongside the component's .js/.jsx files into any React project — the
+   hardcoded fallback values below (after each `var(--bottom-shader-*, ...)`)
+   keep it working even without bottom-shader-definition.js/BottomShader.jsx
+   setting those custom properties, though normally those two do: this
+   crop's actual tuning knobs (host height, canvas-to-host height ratio,
+   fade stops/color) live in bottom-shader-definition.js, not here — that
+   file is the one to edit to retune the look.
 
    Same engine as Shader (see BottomShader.jsx), and the canvas itself is
-   sized identically to Shader's — the full viewport (100vw x 100vh) — so
-   its resolution/aspect ratio and every effect computed from them (vignette
-   shape, sine warp, shatter, bokeh) render pixel-for-pixel the same as
-   Shader's. Only the host clips it down to the bottom slice: fixed to the
-   viewport's bottom edge, `overflow: hidden`, with the canvas positioned
-   `bottom: 0` inside it so the *bottom* of the full-viewport render is what
-   shows through (matching where Shader's own action concentrates — see its
-   vignette/bokeh pointer-follow — rather than an arbitrary crop). Override
+   sized relative to *this component's own host* — a multiple of the host's
+   own height (see CANVAS_HEIGHT_MULTIPLIER in bottom-shader-definition.js)
+   — so its resolution/aspect ratio and every effect computed from them
+   (vignette shape, sine warp, shatter, bokeh) render pixel-for-pixel the
+   same as Shader's whatever size the host actually is: the full viewport on
+   a real page (host is width:100vw), or a small scoped preview (host
+   overridden to 100%/100% of its container, e.g. the docs Playground). Only
+   the host clips it down to the bottom slice: fixed to the viewport's
+   bottom edge, `overflow: hidden`, with the canvas positioned `bottom: 0`
+   inside it so the *bottom* of the taller render is what shows through
+   (matching where Shader's own action concentrates — see its vignette/
+   bokeh pointer-follow — rather than an arbitrary crop). Override
    `position`/`bottom`/`width`/`height` via `style`/`className` if a given
    usage needs a different slice. */
 
@@ -21,7 +31,7 @@
   left: 0;
   overflow: hidden;
   width: 100vw;
-  height: 50vh;
+  height: var(--bottom-shader-height, 25vh);
   background: #ffffff;
 }
 
@@ -30,33 +40,41 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  /* The canvas is 2x the host's height (100vh vs. the host's 50vh), so the
-     host's visible top edge sits exactly at the 50% mark of the canvas's
-     own height. Fading the mask from there produces a soft top edge that
-     blends into the host's white background instead of the effect cutting
-     off abruptly — rather than an opacity fade on the whole canvas (which
-     would dim the visible gradient/glow throughout), this only fades the
-     narrow band right at the crop line. */
-  -webkit-mask-image: linear-gradient(
+  width: 100%;
+  height: var(--bottom-shader-canvas-height, 200%);
+  /* The canvas is taller than the host (200% default — see
+     CANVAS_HEIGHT_MULTIPLIER), so the host's visible top edge sits partway
+     down the canvas's own height, regardless of what the host's actual
+     height is. */
+}
+
+/* The soft top edge (blending into the host's white background instead of
+   the effect cutting off abruptly) used to be a mask-image on the canvas
+   itself. Chromium has a rendering bug where masking a WebGL canvas with a
+   gradient that has two "flat" alpha regions (held-transparent, then
+   held-opaque, as this fade needs — held-transparent alone is fine) makes
+   the *entire* canvas disappear instead of partially fading, regardless of
+   the literal colors/stops used to build those two regions (verified with
+   ~10 gradient variants — this consistently reproduced on the fade this
+   crop actually needs, plain elements with the same gradient were
+   unaffected). Faking the same look with an opaque overlay that fades to
+   transparent — instead of fading the canvas's own alpha — sidesteps it
+   entirely: the canvas always renders fully opaque, and this fades *in
+   front of* it, from the host's own background color down to see-through.
+   `pointer-events: none` keeps it from blocking the mouse-tracked effect
+   underneath. */
+.bottom-shader::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
     to bottom,
-    transparent 0%,
-    transparent 50%,
-    black 65%,
-    black 100%
+    var(--bottom-shader-fade-color, #ffffff) 0%,
+    var(--bottom-shader-fade-color, #ffffff) var(--bottom-shader-fade-hold-end, 50%),
+    transparent var(--bottom-shader-fade-solid-start, 65%),
+    transparent 100%
   );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 50%,
-    black 65%,
-    black 100%
-  );
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
 }
 
 /* Same inert/dimmed treatment as shader.css's `.shader--disabled` — the
