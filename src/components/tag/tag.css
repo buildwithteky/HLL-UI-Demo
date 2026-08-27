@@ -1,0 +1,79 @@
+/* tag.css — everything the Tag needs outside the WebGL canvas itself: pill
+   layout, padding, icon/label spacing, and the removable "x" button reset.
+   Static, hand-authored classes — this is what tag-variants.js's cva()
+   composes, nothing is generated here. Self-contained: copy this file
+   alongside the component's .js/.jsx files into any React project, no
+   build-tool/Tailwind config required. */
+
+.tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 999px; /* the shape's own cornerRadius: 1 already draws a
+                            fully-rounded pill on canvas — this just keeps
+                            focus/clip rings and any host overrides round to
+                            match, it isn't what shapes the visible fill */
+  background: transparent;
+  padding: 6px 14px;
+  font: inherit;
+  cursor: default;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* The label/icon are a DOM overlay above the canvas (z-index 1, see
+   Tag.jsx) so they stay crisp regardless of the shader's heavy blur. */
+.tag__label {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  color: var(--tag-label-color, #ffffff);
+  white-space: nowrap;
+}
+
+.tag__remove {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* clips the zoomed-in glyph below to this button's box */
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tag-label-color, #ffffff);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.tag__remove svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tag__remove:focus-visible {
+  outline: 1px solid var(--tag-label-color, #ffffff);
+  outline-offset: 1px;
+}
+
+.tag--disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Size/variant classes exist as CSS hooks for cva()'s API and for consumer
+   overrides (e.g. analytics selectors) — the tag's actual padding scale
+   (tag-variants.js's SIZE_SCALE applied in Tag.jsx) and gradient come from
+   JS + the shader, not from these empty rule bodies. */
+.tag--sm,
+.tag--md,
+.tag--lg,
+.tag--warm,
+.tag--cool {
+}
