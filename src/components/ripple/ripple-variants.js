@@ -34,27 +34,27 @@ export const VARIANT_GRADIENTS = {
   // stops rather than 2-3 so buildPalette passes them through unchanged
   // instead of resampling.
   'hll-application': {
-    colors: ['#ddeac2', '#d8f3ee', '#9fade0', '#c7abe2', '#c7436a', '#322527'],
+    colors: ['#387dd6', '#7887e6', '#a182bf', '#bf7dc7', '#f28a85', '#f7262b'],
     usage: 'HLL application page',
   },
   'hll-foundation': {
-    colors: ['#6fa5c3', '#b39cd8', '#bb3e91', '#2d1515', '#752424', '#981b1b'],
+    colors: ['#8f6999', '#ba70ba', '#e3807d', '#ff5c21', '#ff874d', '#ffb359'],
     usage: 'HLL Foundation page',
   },
   'hll-trust-and-governance': {
-    colors: ['#cff7f0', '#9ae46c', '#93ee68', '#8fde2b', '#c57226', '#642626'],
+    colors: ['#78b3e3', '#45b0a8', '#47ccab', '#3dba85', '#14ad75', '#007345'],
     usage: 'HLL Trust and Governance page',
   },
   'hll-people-and-policy': {
-    colors: ['#eb1414', '#f45d5d', '#ea3e3e', '#cc2424', '#e34f4f', '#6d1d1d'],
+    colors: ['#ffd680', '#ffdea8', '#ffcc94', '#ffb378', '#ffba99', '#ff9445'],
     usage: 'HLL People and Policy page',
   },
   'hll-ontology': {
-    colors: ['#d37fe1', '#a67ecd', '#b591d9', '#c4a4e5', '#ffffff', '#ffffff'],
+    colors: ['#cf9eb0', '#bf70a6', '#bf7db5', '#bf8cc4', '#c78aff', '#8266ff'],
     usage: 'HLL Ontology page',
   },
   'hll-ai': {
-    colors: ['#ad7cdf', '#adb7eb', '#d3eee3', '#e2f4f8', '#fbfefe', '#fcfefb'],
+    colors: ['#bf9cad', '#a399cc', '#6e70e0', '#8799ed', '#7a99fc', '#4075fc'],
     usage: 'HLL AI page',
   },
 };
