@@ -7,4 +7,4 @@ export {
   resolveVariantPalette,
   buildPalette,
 } from './ripple-variants.js';
-export { BASE_PARAMS, MAX_RIPPLES } from './ripple-definition.js';
+export { VARIANT_PARAMS, MAX_RIPPLES, resolveVariantParams } from './ripple-definition.js';

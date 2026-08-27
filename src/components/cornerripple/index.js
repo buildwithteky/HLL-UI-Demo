@@ -7,4 +7,4 @@ export {
   resolveVariantPalette,
   buildPalette,
 } from './cornerripple-variants.js';
-export { BASE_PARAMS, MAX_RIPPLES } from './cornerripple-definition.js';
+export { VARIANT_PARAMS, MAX_RIPPLES, resolveVariantParams } from './cornerripple-definition.js';
