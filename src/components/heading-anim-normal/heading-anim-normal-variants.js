@@ -1,20 +1,23 @@
-// heading-anim-variants.js — the gradient-reveal heading's CVA variant
-// system. Same split as the HLL Button / ripple components: CVA composes
-// only the static structural class name; each variant's 2-3 color gradient
-// lives in the VARIANT_GRADIENTS map below, copied verbatim from
-// hll-button-variants.js so every design-system component stays keyed by
-// the same variant names and colors.
+// heading-anim-normal-variants.js — the "normal" speed gradient-reveal
+// heading's CVA variant system (duration 600, the white -> color -> black
+// "sweep" look — see GradientRevealTextNormal.jsx). heading-anim/ already
+// covers the "slow" speed (duration 1200, the multi-band "leak" sweep), so
+// this folder only needs to carry this one. Same split as
+// heading-anim-variants.js: CVA composes only the static structural class
+// name, the per-service 2-color gradient lives in VARIANT_GRADIENTS below —
+// copied verbatim from hll-button-variants.js so every design-system
+// component stays keyed by the same variant names and colors.
 import { cva } from 'class-variance-authority';
 
-export const headingAnimVariants = cva('gradient-reveal-text', {
+export const gradientRevealTextNormalVariants = cva('gradient-reveal-text-normal', {
   variants: {
     variant: {
-      'hll-ai': 'gradient-reveal-text--hll-ai',
-      'hll-trust': 'gradient-reveal-text--hll-trust',
-      'hll-foundation': 'gradient-reveal-text--hll-foundation',
-      'hll-ontology': 'gradient-reveal-text--hll-ontology',
-      'hll-people': 'gradient-reveal-text--hll-people',
-      'hll-application': 'gradient-reveal-text--hll-application',
+      'hll-ai': 'gradient-reveal-text-normal--hll-ai',
+      'hll-trust': 'gradient-reveal-text-normal--hll-trust',
+      'hll-foundation': 'gradient-reveal-text-normal--hll-foundation',
+      'hll-ontology': 'gradient-reveal-text-normal--hll-ontology',
+      'hll-people': 'gradient-reveal-text-normal--hll-people',
+      'hll-application': 'gradient-reveal-text-normal--hll-application',
     },
   },
   defaultVariants: {
@@ -23,15 +26,11 @@ export const headingAnimVariants = cva('gradient-reveal-text', {
 });
 
 /*
- * Same gradients as VARIANT_GRADIENTS in hll-button/hll-button-variants.js
+ * Same gradients as VARIANT_GRADIENTS in heading-anim/heading-anim-variants.js
  * — kept as a literal copy so this folder stays self-contained and can be
  * copied into another project on its own.
  */
 export const VARIANT_GRADIENTS = {
-  // Per-service variants: same fixed 2-color gradients as
-  // hll-button-variants.js's / shader-variants.js's VARIANT_GRADIENTS, so
-  // this heading matches HLLButton/Shader/BottomShader/Ripple/CornerRipple
-  // for each service.
   'hll-ai': {
     colors: ['#3773FF', '#BCA6D6'],
     usage: 'hll-ai service',
@@ -58,7 +57,7 @@ export const VARIANT_GRADIENTS = {
   },
 };
 
-export const HEADING_ANIM_VARIANT_NAMES = Object.keys(VARIANT_GRADIENTS);
+export const HEADING_ANIM_NORMAL_VARIANT_NAMES = Object.keys(VARIANT_GRADIENTS);
 
 export function resolveVariantColors(variant) {
   const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS['hll-ai'];
