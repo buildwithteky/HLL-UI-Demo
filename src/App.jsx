@@ -1,6 +1,7 @@
 import { HLLButton } from './components/hll-button';
 import { HLLOutlineButton } from './components/hll-outline-button';
-import { GradientRevealText } from './components/heading-anim';
+import { GradientRevealTextSlow } from './components/heading-anim-slow';
+import { GradientRevealTextNormal } from './components/heading-anim-normal';
 import { Ripple } from './components/ripple';
 import { CornerRipple } from './components/cornerripple';
 import { OurPromise } from './components/our-promise';
@@ -38,33 +39,43 @@ export default function App() {
         <HLLButton variant="hll-application">HLL Application</HLLButton>
       </div> */}
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="services">Services</HLLOutlineButton>
         <HLLOutlineButton variant="industries">Industries</HLLOutlineButton>
         <HLLOutlineButton variant="engagement">Engagement</HLLOutlineButton>
         <HLLOutlineButton variant="about">About</HLLOutlineButton>
         <HLLOutlineButton variant="contact">Contact</HLLOutlineButton>
-      </div>
+        <HLLOutlineButton variant="hll-ontology">Data Engineering</HLLOutlineButton>
+      </div> */}
 
-      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="hll-ai">HLL AI</HLLOutlineButton>
         <HLLOutlineButton variant="hll-trust">HLL Trust</HLLOutlineButton>
         <HLLOutlineButton variant="hll-foundation">HLL Foundation</HLLOutlineButton>
         <HLLOutlineButton variant="hll-ontology">HLL Ontology</HLLOutlineButton>
         <HLLOutlineButton variant="hll-people">HLL People</HLLOutlineButton>
         <HLLOutlineButton variant="hll-application">HLL Application</HLLOutlineButton>
-      </div> */}
+      </div>
 
       {/* Text Animations */}
 
-      {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
-        <GradientRevealText text="Intelligence and Imagination" variant="hll-ai" />
-        <GradientRevealText text="Intelligence and Imagination" variant="hll-trust" />
-        <GradientRevealText text="Intelligence and Imagination" variant="hll-foundation" />
-        <GradientRevealText text="Intelligence and Imagination" variant="hll-ontology" />
-        <GradientRevealText text="Intelligence and Imagination" variant="hll-people" />
-        <GradientRevealText text="Intelligence and Imagination" variant="hll-application" />
-      </div> */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-ai" />
+        {/* <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-trust" />
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-foundation" />
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-ontology" />
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-people" />
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-application" /> */}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-ai" />
+        {/* <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-trust" />
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-foundation" />
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-ontology" />
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-people" />
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-application" /> */}
+      </div>
 
       {/* Ripple / CornerRipple */}
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
@@ -120,3 +131,4 @@ export default function App() {
     </>
   );
 }
+// 
