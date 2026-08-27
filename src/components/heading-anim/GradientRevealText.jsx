@@ -1,29 +1,66 @@
-import React, { useEffect, useId, useState } from "react";
+import React, { useEffect, useId, useState } from 'react';
+import { headingAnimVariants, resolveVariantColors, hexToRgba } from './heading-anim-variants.js';
 
 /**
- * GradientRevealText — Variant A (Sweep)
- * Text fades in while a white → colour → black gradient
- * sweeps across it, with a soft edge glow. No background,
- * no layout chrome — just the text element itself.
+ * GradientRevealText — the design system's single reusable heading reveal.
+ *
+ * Same one-component-many-variants approach as HLLButton/Ripple: a
+ * `variant` prop selects one of the design system's predefined 2-3 color
+ * gradients (see heading-anim-variants.js, copied from
+ * hll-button-variants.js's VARIANT_GRADIENTS) — the reveal timing, easing,
+ * blur and glow are shared by every variant unchanged. `colors` exists as
+ * an explicit one-off override, same role as HLLButton's `gradient` prop.
+ *
+ * Text fades in while the variant's gradient sweeps across it in bands,
+ * with a soft edge glow matched to the same colors. No background, no
+ * layout chrome — just the text element itself.
  *
  * Usage:
- *   <GradientRevealText text="Intelligence and Imagination" />
+ *   <GradientRevealText text="Intelligence and Imagination" variant="services" />
  *   <GradientRevealText text="Hello" replayKey={someChangingValue} />
  */
+
+// Resamples a variant's 2-3 hex stops into evenly-spaced bands across the
+// sweep, generalizing the original hand-tuned "leak" gradient (a fixed
+// 4-color band) to any variant's stop count.
+function buildBandGradient(colors) {
+  const start = 20;
+  const end = 98;
+  const step = (end - start) / colors.length;
+  const stops = ['transparent 0%'];
+  colors.forEach((color, i) => {
+    const from = start + i * step;
+    const to = start + (i + 1) * step;
+    stops.push(`${color} ${from}%`, `${color} ${to}%`);
+  });
+  stops.push('transparent 100%');
+  return stops.join(',\n            ');
+}
+
+function buildGlowShadow(colors, alphas) {
+  return colors
+    .map((color, i) => `0 0 ${[2, 10, 22][i] ?? 22}px ${hexToRgba(color, alphas[i] ?? 0.18)}`)
+    .join(', ');
+}
+
 export default function GradientRevealText({
-  text = "Intelligence and Imagination",
+  text = 'Intelligence and Imagination',
+  variant = 'enterprise',
+  colors,
   autoPlay = true,
   replayKey,
-  fontSize = "67px",
-  letterSpacing = "0.010em",
-  ink = "#1a1a1a",
-  duration = 600,
+  fontSize = '67px',
+  letterSpacing = '0.010em',
+  ink = '#1a1a1a',
+  duration = 1200,
   glow = true,
-  colors = { lead: "#ffffff", mid: "#ff6b35", tail: "#1a1a1a" },
-  sweepBlur = 6,
+  sweepBlur = 6.4,
+  className,
+  style,
 }) {
-  const rawId = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const rawId = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [running, setRunning] = useState(false);
+  const gradientColors = colors && colors.length >= 2 ? colors : resolveVariantColors(variant);
 
   useEffect(() => {
     if (!autoPlay) return;
@@ -34,7 +71,9 @@ export default function GradientRevealText({
     return () => cancelAnimationFrame(raf1);
   }, [text, replayKey, autoPlay]);
 
-  const ease = "cubic-bezier(0.445, 0.05, 0.55, 0.95)";
+  const ease = 'cubic-bezier(0.445, 0.05, 0.55, 0.95)';
+  const glowPeak = buildGlowShadow(gradientColors, [0.45, 0.35, 0.18]);
+  const glowNone = gradientColors.map(() => '0 0 0 rgba(0,0,0,0)').join(', ');
 
   return (
     <>
@@ -52,7 +91,7 @@ export default function GradientRevealText({
         .gtr-${rawId}.is-running { opacity: 1; }
         ${glow ? `.gtr-${rawId}.is-running {
           animation: gtrGlow-${rawId} ${duration}ms ${ease} forwards;
-        }` : ""}
+        }` : ''}
         .gtr-${rawId} .gtr-inner {
           display: inline-block;
           color: ${ink};
@@ -70,21 +109,16 @@ export default function GradientRevealText({
           pointer-events: none;
           color: transparent;
           background-image: linear-gradient(115deg,
-            transparent 0%,
-            ${colors.lead} 20%,
-            ${colors.mid} 50%,
-            ${colors.tail} 80%,
-            transparent 100%);
+            ${buildBandGradient(gradientColors)});
           background-size: 420% 100%;
           background-position: 200% 50%;
           -webkit-background-clip: text;
           background-clip: text;
           opacity: 0;
-          filter: blur(0.4px);
+          filter: blur(${sweepBlur}px);
         }
         .gtr-${rawId}.is-running::before {
-          animation: gtrSweep-${rawId} ${duration}ms ${ease} forwards,
-                     gtrSweepBlur-${rawId} ${duration}ms ${ease} forwards;
+          animation: gtrSweep-${rawId} ${duration}ms ${ease} forwards;
         }
         @keyframes gtrLetter-${rawId} {
           0% { opacity: 0; color: ${ink}; }
@@ -106,19 +140,11 @@ export default function GradientRevealText({
           75% { opacity: 0.35; background-position: -30% 50%; }
           100% { opacity: 0; background-position: -90% 50%; }
         }
-        @keyframes gtrSweepBlur-${rawId} {
-          0% { filter: blur(0.4px); }
-          15% { filter: blur(2px); }
-          40% { filter: blur(${sweepBlur}px); }
-          55% { filter: blur(${sweepBlur}px); }
-          75% { filter: blur(3px); }
-          100% { filter: blur(0.4px); }
-        }
         @keyframes gtrGlow-${rawId} {
-          0% { text-shadow: 0 0 0 rgba(0,0,0,0), 0 0 0 rgba(0,0,0,0), 0 0 0 rgba(0,0,0,0); }
-          30% { text-shadow: 0 0 2px rgba(255, 255, 255, 0.45), 0 0 10px rgba(255, 107, 53, 0.35), 0 0 22px rgba(26, 26, 26, 0.15); }
-          60% { text-shadow: 0 0 2px rgba(255, 255, 255, 0.45), 0 0 8px rgba(255, 107, 53, 0.35), 0 0 16px rgba(26, 26, 26, 0.15); }
-          100% { text-shadow: 0 0 0 rgba(0,0,0,0), 0 0 0 rgba(0,0,0,0), 0 0 0 rgba(0,0,0,0); }
+          0% { text-shadow: ${glowNone}; }
+          30% { text-shadow: ${glowPeak}; }
+          60% { text-shadow: ${glowPeak}; }
+          100% { text-shadow: ${glowNone}; }
         }
         @media (prefers-reduced-motion: reduce) {
           .gtr-${rawId}, .gtr-${rawId} .gtr-inner, .gtr-${rawId}::before { animation: none !important; }
@@ -126,8 +152,13 @@ export default function GradientRevealText({
           .gtr-${rawId} .gtr-inner { opacity: 1; filter: none; color: ${ink}; }
         }
       `}</style>
-      <span className={`gtr-${rawId}${running ? " is-running" : ""}`} data-text={text}>
-        <span className="gtr-inner">{text}</span>
+      <span
+        className={headingAnimVariants({ variant, className })}
+        style={style}
+      >
+        <span className={`gtr-${rawId}${running ? ' is-running' : ''}`} data-text={text}>
+          <span className="gtr-inner">{text}</span>
+        </span>
       </span>
     </>
   );
