@@ -14,9 +14,16 @@
 // (rather than the window), and a plain `{ dispose }` return instead of a
 // page takeover when WebGL2 isn't available.
 export function createShaderFX(canvas, options = {}) {
-  const { colors, settings, pauseOnDoubleClick = true, blueNoiseSize = 256 } = options;
+  const { colors, settings, pauseOnDoubleClick = true, blueNoiseSize = 256, pointerMaxY } = options;
+  // Opt-in via `settings.background.transparent` (unset/false for every
+  // existing preset — Shader/BottomShader's own BASE_SETTINGS never set
+  // it, so their opaque full-bleed look is unchanged). Needs the WebGL
+  // context created with `alpha: true` up front — a canvas created with
+  // `alpha: false` can never composite as see-through against the DOM
+  // beneath it, no matter what the shader itself outputs.
+  const transparentBg = !!settings.background.transparent;
 
-  const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, preserveDrawingBuffer: false });
+  const gl = canvas.getContext('webgl2', { antialias: false, alpha: transparentBg, preserveDrawingBuffer: false });
   if (!gl) {
     console.warn('Shader: WebGL2 is not available in this browser — the effect will not render.');
     return { dispose() {} };
@@ -252,7 +259,7 @@ export function createShaderFX(canvas, options = {}) {
     'uniform sampler2D tInput;\n' +
     'uniform vec3 uBgColor, uOutputColor;\n' +
     'uniform vec2 uPos, uResolution;\n' +
-    'uniform float uAberration, uBlendStrength;\n' +
+    'uniform float uAberration, uBlendStrength, uTransparent, uCapAmount;\n' +
     'void main(){\n' +
     '  vec2 aspect = vec2(uResolution.x/uResolution.y, 1.0);\n' +
     '  vec2 dir = (vUv - uPos) * aspect;\n' +
@@ -267,8 +274,30 @@ export function createShaderFX(canvas, options = {}) {
     '  float chainAlpha = cG.a;\n' +
     '  vec3 base = uBgColor;\n' +
     '  vec3 blend = mix(uOutputColor, chainColor, chainAlpha);\n' +
-    '  fragColor.a = 1.;\n' +
-    '  fragColor.rgb = base * mix(vec3(1.), blend, uBlendStrength);\n' +
+    // uTransparent (0 or 1, see `settings.background.transparent`) swaps
+    // between the original opaque look (an solid uBgColor plate, full
+    // alpha) and a see-through one where only the effect chain itself is
+    // visible, its own alpha carried straight through as the pixel's
+    // alpha — so a caller compositing this canvas over other page content
+    // (e.g. BottomShader's `mix-blend-mode: hard-light`) sees that content
+    // instead of a solid background color everywhere the effect chain
+    // doesn't itself contribute.
+    '  vec3 opaqueRgb = base * mix(vec3(1.), blend, uBlendStrength);\n' +
+    // uCapAmount (0-1, see `settings.output.capAmount`) is the transparent
+    // branch's own further mix, from the see-through effect chain toward a
+    // fully opaque uOutputColor plate. It exists so BottomShader can ease a
+    // transparent, hard-light-composited overlay into a solid "end of
+    // page" cap using nothing but this one canvas: a hard-light blend of a
+    // fully opaque, pure uOutputColor (white) top layer is visually
+    // identical to a plain (non-blended) one — hard-light's formula
+    // collapses to the top color outright once its alpha is 1 and its
+    // value is 1 in every channel — so there's no second element or
+    // blend-mode switch needed to "remove" hard-light at uCapAmount == 1;
+    // it already reads as a plain solid cap by then.
+    '  vec3 transparentRgb = mix(blend, uOutputColor, uCapAmount);\n' +
+    '  float transparentAlpha = mix(chainAlpha, 1., uCapAmount);\n' +
+    '  fragColor.rgb = mix(opaqueRgb, transparentRgb, uTransparent);\n' +
+    '  fragColor.a = mix(1., transparentAlpha, uTransparent);\n' +
     '}';
 
   const vignetteProg = createProgram(VS, FS_VIGNETTE);
@@ -384,12 +413,26 @@ export function createShaderFX(canvas, options = {}) {
   // pointer tracking — relative to the canvas's own bounding rect, same as
   // the original, but scoped to this instance instead of module globals
   // ---------------------------------------------------------------
-  const pointer = [0.5, 0.5];
-  const currPointer = [0.5, 0.5];
+  const pointer = [0.5, pointerMaxY != null ? pointerMaxY : 0.5];
+  const currPointer = [pointer[0], pointer[1]];
   function onPointerMove(e) {
     const r = canvas.getBoundingClientRect();
     pointer[0] = (e.clientX - r.left) / r.width;
-    pointer[1] = 1 - (e.clientY - r.top) / r.height;
+    let y = 1 - (e.clientY - r.top) / r.height;
+    // BottomShader only: its canvas spans the full page height (see
+    // bottom-shader-definition.js's CANVAS_HEIGHT) but only the bottom
+    // slice is actually visible — the rest sits clipped above it. Without
+    // this, the cursor tracking above still computes a real (in-range)
+    // pointer y whenever the mouse is anywhere higher up the page, so the
+    // light just drifts up out of the visible window and the effect reads
+    // as "off" the moment the cursor leaves the strip. Clamping to
+    // `pointerMaxY` (the visible window's own top edge, in this same
+    // canvas-normalized space) pins the light there instead, so it keeps
+    // reading as lit — as if the cursor never left the top edge of the
+    // shader — the instant the real cursor is above that line, and tracks
+    // normally again the moment it's back inside the window.
+    if (pointerMaxY != null && y > pointerMaxY) y = pointerMaxY;
+    pointer[1] = y;
   }
   window.addEventListener('pointermove', onPointerMove, { passive: true });
 
@@ -495,7 +538,9 @@ export function createShaderFX(canvas, options = {}) {
     set2(u, 'uResolution', [canvas.width, canvas.height]);
     setF(u, 'uAberration', settings.output.aberration);
     setF(u, 'uBlendStrength', settings.output.blendStrength);
-    gl.clearColor(bgColorVec[0], bgColorVec[1], bgColorVec[2], 1);
+    setF(u, 'uTransparent', transparentBg ? 1 : 0);
+    setF(u, 'uCapAmount', settings.output.capAmount || 0);
+    gl.clearColor(bgColorVec[0], bgColorVec[1], bgColorVec[2], transparentBg ? 0 : 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     drawQuad();
   }
