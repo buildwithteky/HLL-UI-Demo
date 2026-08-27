@@ -1,0 +1,11 @@
+/* corner-ripple.css — the corner-ripple host element's layout, outside the
+   WebGL canvas itself. Static, hand-authored classes — this is what
+   cornerripple-variants.js's cva() composes. Self-contained: copy this file
+   alongside the component's .js/.jsx files into any React project. */
+
+.corner-ripple {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
