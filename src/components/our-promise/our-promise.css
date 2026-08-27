@@ -1,0 +1,122 @@
+/* our-promise.css — layout for the "Our Promise" component's DOM overlays
+   (hero text + knowledge-graph image) and the fonts they use. Static,
+   hand-authored classes. Self-contained: copy this file, the Aeonik TRIAL
+   folder, shader.vert and shader.frag alongside the component's .js/.jsx
+   files into any React project — no index.html/sketch.js/style.css from
+   the original standalone export required. */
+
+@import url('https://fonts.googleapis.com/css2?family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap');
+
+@font-face {
+  font-family: 'Aeonik Light';
+  src: url('./Aeonik TRIAL/AeonikTRIAL-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+.our-promise {
+  position: relative;
+}
+
+.our-promise-canvas-host {
+  position: fixed;
+  inset: 0;
+  z-index: -1; /* stays as a fullscreen backdrop, out of page flow */
+  overflow: hidden;
+}
+
+.our-promise-canvas-host canvas {
+  display: block !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+/* ============================================ */
+/* HERO TEXT OVERLAY                             */
+/* ============================================ */
+
+.our-promise-hero-text {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: min(90vw, 900px);
+  text-align: center;
+  color: #1a1a1a;
+  pointer-events: none; /* purely decorative, doesn't block the page */
+}
+
+.our-promise-eyebrow {
+  font-family: 'Sometype Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.our-promise-headline {
+  margin: 0;
+  font-family: 'Aeonik Light', sans-serif;
+  font-weight: 300;
+  font-size: clamp(28px, 5.5vw, 64px);
+  line-height: 1.15;
+}
+
+.our-promise-question-mark {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: 300;
+  display: inline-block;
+  transform: scaleX(0.82);
+  transform-origin: center;
+}
+
+/* ============================================ */
+/* KNOWLEDGE GRAPH / IMAGE REVEAL                */
+/* The outer container is the fullscreen,        */
+/* responsive stage — it's what scales + fades   */
+/* in (zoom-in) as the hero text scales + fades   */
+/* out. The <img> inside is fit with              */
+/* object-fit: contain so it sits edge-to-edge on */
+/* whichever axis is the tighter constraint, at    */
+/* any viewport size, without ever being cropped   */
+/* or stretched.                                   */
+/* ============================================ */
+
+.our-promise-image-stage {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 80vw;
+  height: 100vh;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.82);
+  will-change: opacity, transform;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.our-promise-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* fits edge-to-edge on the limiting axis */
+  object-position: center;
+}
+
+/* ============================================ */
+/* SCROLL SPACER                                 */
+/* The canvas is a fixed fullscreen backdrop, so  */
+/* this invisible tall div is what gives the page */
+/* something to actually scroll through.          */
+/* ============================================ */
+
+.our-promise-scroll-spacer {
+  width: 1px;
+}
