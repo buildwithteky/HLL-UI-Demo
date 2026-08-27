@@ -130,12 +130,10 @@ export default function App() {
       {/* <BottomShader variant="hll-people" /> */}
       {/* <BottomShader variant="hll-application" /> */}
 
-      {/* BottomShader scroll-transition demo — Services.png as the page's
-          own scrollable content, BottomShader smoothly ramping up
-          shatter.scale/amount and crossfading its hard-light blend into a
-          plain cap once the page's actually scrolled to the end. See
+      {/* Services.png as the page's own content, with BottomShader (plain
+          defaults, same as the commented-out usage above) sitting directly
+          on top of it at the bottom of the viewport. See
           bottom-shader/ServicesScrollDemo.jsx. */}
-          
       <ServicesScrollDemo />
     </>
   );
