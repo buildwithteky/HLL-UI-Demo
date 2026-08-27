@@ -8,6 +8,7 @@ import { OurPromise } from './components/our-promise';
 import { Tag } from './components/tag';
 import { Shader } from './components/shader';
 import { BottomShader } from './components/bottom-shader';
+import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.jsx';
 
 // This demonstrates the actual reusable components — same imports a
 // consumer app would use — not a separate demo-only implementation.
@@ -48,34 +49,34 @@ export default function App() {
         <HLLOutlineButton variant="hll-ontology">Data Engineering</HLLOutlineButton>
       </div> */}
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="hll-ai">HLL AI</HLLOutlineButton>
         <HLLOutlineButton variant="hll-trust">HLL Trust</HLLOutlineButton>
         <HLLOutlineButton variant="hll-foundation">HLL Foundation</HLLOutlineButton>
         <HLLOutlineButton variant="hll-ontology">HLL Ontology</HLLOutlineButton>
         <HLLOutlineButton variant="hll-people">HLL People</HLLOutlineButton>
         <HLLOutlineButton variant="hll-application">HLL Application</HLLOutlineButton>
-      </div>
+      </div> */}
 
       {/* Text Animations */}
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+      {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-ai" />
-        {/* <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-trust" />
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-trust" />
         <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-foundation" />
         <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-ontology" />
         <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-people" />
-        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-application" /> */}
-      </div>
+        <GradientRevealTextSlow text="Intelligence and Imagination" variant="hll-application" />
+      </div> */}
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+      {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-ai" />
-        {/* <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-trust" />
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-trust" />
         <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-foundation" />
         <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-ontology" />
         <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-people" />
-        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-application" /> */}
-      </div>
+        <GradientRevealTextNormal text="Intelligence and Imagination" variant="hll-application" />
+      </div> */}
 
       {/* Ripple / CornerRipple */}
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
@@ -128,6 +129,14 @@ export default function App() {
       {/* <BottomShader variant="hll-ontology" /> */}
       {/* <BottomShader variant="hll-people" /> */}
       {/* <BottomShader variant="hll-application" /> */}
+
+      {/* BottomShader scroll-transition demo — Services.png as the page's
+          own scrollable content, BottomShader smoothly ramping up
+          shatter.scale/amount and crossfading its hard-light blend into a
+          plain cap once the page's actually scrolled to the end. See
+          bottom-shader/ServicesScrollDemo.jsx. */}
+          
+      <ServicesScrollDemo />
     </>
   );
 }

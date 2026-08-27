@@ -1,0 +1,14 @@
+/* services-scroll-demo.css — layout for ServicesScrollDemo.jsx. The image
+   is the page's own scrollable content (no nested overflow container) so
+   BottomShader's default `position: fixed; bottom: 0` (bottom-shader.css)
+   lines up with the real page's bottom edge, same as any other usage. */
+.services-scroll-demo {
+  position: relative;
+  width: 100%;
+}
+
+.services-scroll-demo__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}

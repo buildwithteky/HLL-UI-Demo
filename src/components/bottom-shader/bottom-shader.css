@@ -63,6 +63,17 @@
      canvas's own height, regardless of what the host's actual height is. */
 }
 
+/* Only applied when BottomShader's `endShatter` prop is set (the scroll-
+   overlay usage — see ServicesScrollDemo.jsx) — every other usage keeps its
+   existing plain (non-blended) appearance unchanged. `hard-light` is what
+   lets the effect read the page content beneath it while scrolling; it
+   stays applied permanently, through the "scrolled to the end" transition
+   too — see shader-runtime.js's `uCapAmount` for why that transition never
+   needs a second, differently-blended layer or a blend-mode switch. */
+.bottom-shader__canvas--overlay {
+  mix-blend-mode: hard-light;
+}
+
 /* The soft top edge (blending into the host's white background instead of
    the effect cutting off abruptly) used to be a mask-image on the canvas
    itself. Chromium has a rendering bug where masking a WebGL canvas with a
