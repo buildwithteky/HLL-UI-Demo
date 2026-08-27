@@ -5,19 +5,17 @@
    hardcoded fallback values below (after each `var(--bottom-shader-*, ...)`)
    keep it working even without bottom-shader-definition.js/BottomShader.jsx
    setting those custom properties, though normally those two do: this
-   crop's actual tuning knobs (host height, canvas-to-host height ratio,
-   fade stops/color) live in bottom-shader-definition.js, not here — that
-   file is the one to edit to retune the look.
+   crop's actual tuning knobs (host height, canvas height, fade stops/
+   color) live in bottom-shader-definition.js, not here — that file is the
+   one to edit to retune the look.
 
    Same engine as Shader (see BottomShader.jsx), and the canvas itself is
-   sized relative to *this component's own host* — a multiple of the host's
-   own height (see CANVAS_HEIGHT_MULTIPLIER in bottom-shader-definition.js)
-   — so its resolution/aspect ratio and every effect computed from them
+   always the true viewport height (see CANVAS_HEIGHT in
+   bottom-shader-definition.js) regardless of what the host crops it down
+   to — so its resolution/aspect ratio and every effect computed from them
    (vignette shape, sine warp, shatter, bokeh) render pixel-for-pixel the
-   same as Shader's whatever size the host actually is: the full viewport on
-   a real page (host is width:100vw), or a small scoped preview (host
-   overridden to 100%/100% of its container, e.g. the docs Playground). Only
-   the host clips it down to the bottom slice: fixed to the viewport's
+   same as Shader's own full-viewport canvas. Only the host clips it down
+   to the bottom slice: fixed to the viewport's
    bottom edge, `overflow: hidden`, with the canvas positioned `bottom: 0`
    inside it so the *bottom* of the taller render is what shows through
    (matching where Shader's own action concentrates — see its vignette/
@@ -35,17 +33,34 @@
   background: #ffffff;
 }
 
-.bottom-shader__canvas {
+/* Qualified with the host class (`.bottom-shader .bottom-shader__canvas`,
+   not just `.bottom-shader__canvas`) for specificity, not nesting — an
+   environment that also loads a rule targeting bare `canvas` elements at
+   class+type specificity (one class + one type beats one class alone) would
+   otherwise silently win over this rule's `bottom: 0` with its own `top: 0`
+   regardless of source order, which the browser resolves by discarding
+   `bottom` (an over-constrained absolutely-positioned box with top, height,
+   AND bottom all specified drops `bottom`) — anchoring this from the wrong
+   edge and showing the top of the render instead of the bottom slice this
+   whole component exists to crop to. (Studio's docs.html hits exactly this
+   with base.css's `.js canvas` rule.)
+
+   That higher specificity only protects the properties actually declared
+   here, though — CSS cascades per-*property*, not per-rule. `top` must be
+   explicitly reset to `auto` right here too, or an unopposed `top: 0` from
+   one of those lower-specificity rules still applies (nothing here
+   overrode it) and reproduces the exact same over-constrained conflict. */
+.bottom-shader .bottom-shader__canvas {
   display: block;
   position: absolute;
+  top: auto;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: var(--bottom-shader-canvas-height, 200%);
-  /* The canvas is taller than the host (200% default — see
-     CANVAS_HEIGHT_MULTIPLIER), so the host's visible top edge sits partway
-     down the canvas's own height, regardless of what the host's actual
-     height is. */
+  height: var(--bottom-shader-canvas-height, 100vh);
+  /* The canvas is always the true viewport height (100vh default — see
+     CANVAS_HEIGHT), so the host's visible top edge sits partway down the
+     canvas's own height, regardless of what the host's actual height is. */
 }
 
 /* The soft top edge (blending into the host's white background instead of

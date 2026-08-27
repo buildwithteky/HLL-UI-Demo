@@ -17,7 +17,7 @@ import { createShaderFX } from '../shader/shader-runtime.js';
 import { BASE_SETTINGS, MULTIPLIER, BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
 import {
   HOST_HEIGHT,
-  CANVAS_HEIGHT_MULTIPLIER,
+  CANVAS_HEIGHT,
   FADE_HOLD_END,
   FADE_SOLID_START,
   FADE_COLOR,
@@ -25,14 +25,14 @@ import {
 import { bottomShaderVariants, resolveVariantColors } from './bottom-shader-variants.js';
 import './bottom-shader.css';
 
-// This crop's own layout knobs (height, canvas-to-host ratio, fade stops/
+// This crop's own layout knobs (host height, canvas height, fade stops/
 // color — see bottom-shader-definition.js), fed to bottom-shader.css as CSS
 // custom properties. A caller's own `style` is spread after, so it can
 // still override any of these (or `height`/`position`/etc. directly) same
 // as before.
 const LAYOUT_STYLE = {
   '--bottom-shader-height': HOST_HEIGHT,
-  '--bottom-shader-canvas-height': `${CANVAS_HEIGHT_MULTIPLIER * 100}%`,
+  '--bottom-shader-canvas-height': CANVAS_HEIGHT,
   '--bottom-shader-fade-hold-end': `${FADE_HOLD_END}%`,
   '--bottom-shader-fade-solid-start': `${FADE_SOLID_START}%`,
   '--bottom-shader-fade-color': FADE_COLOR,
