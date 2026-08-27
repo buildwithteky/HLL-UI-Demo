@@ -1,0 +1,39 @@
+/* shader.css — the Shader component's host/canvas layout. Static,
+   hand-authored classes — this is what shader-variants.js's cva()
+   composes, nothing is generated here. Self-contained: copy this file
+   alongside the component's .js/.jsx files into any React project.
+
+   Unlike the exported index.pen.html (a fullscreen page takeover), the
+   host here just fills its parent — position the component itself
+   (fixed/absolute/a normal flex child) from the outside, the way any other
+   component in this design system is placed. */
+
+.shader {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+}
+
+.shader__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Same inert/dimmed treatment as hll-button.css's `.hll-button--disabled` —
+   the canvas isn't even mounted at this point (see Shader.jsx), so this
+   just keeps the plain background from reading as a broken/empty effect. */
+.shader--disabled {
+  opacity: 0.5;
+}
+
+/* Variant classes exist as CSS hooks for cva()'s API and for consumer
+   overrides (e.g. analytics selectors) — the jewel's actual gradient comes
+   from shader-variants.js + the WebGL texture, not from these empty rule
+   bodies. */
+.shader--enterprise,
+.shader--services,
+.shader--industries {
+}

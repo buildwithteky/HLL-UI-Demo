@@ -1,0 +1,553 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlockGL — jewel refraction</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #ffffff; height: 100%; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #credit {
+    position: fixed; bottom: 16px; left: 18px;
+    font: 12px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: rgba(0,0,0,.45); letter-spacing: .02em;
+    pointer-events: none; transition: opacity 1.2s ease;
+  }
+  #credit.fade { opacity: 0; }
+  #fallback { color: #111; font-family: sans-serif; padding: 2rem; max-width: 32rem; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="credit">move your pointer · prismatic gem refraction<br>double-click to pause</div>
+<script>
+(function () {
+  'use strict';
+
+  var canvas = document.getElementById('gl');
+  var gl = canvas.getContext('webgl2', { antialias: false, alpha: false, preserveDrawingBuffer: false });
+  if (!gl) {
+    document.body.innerHTML = '<div id="fallback">WebGL2 is not available in this browser, so this shader sketch can\'t run here.</div>';
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // helpers
+  // ---------------------------------------------------------------
+  function hexToRgb(hex) {
+    var c = hex.substring(1).split('');
+    if (c.length === 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+    var n = parseInt(c.join(''), 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function compileShader(src, type) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error(gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+  function createProgram(vsSrc, fsSrc) {
+    var p = gl.createProgram();
+    gl.attachShader(p, compileShader(vsSrc, gl.VERTEX_SHADER));
+    gl.attachShader(p, compileShader(fsSrc, gl.FRAGMENT_SHADER));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error(gl.getProgramInfoLog(p));
+    }
+    var uniforms = {};
+    var n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (var i = 0; i < n; i++) {
+      var info = gl.getActiveUniform(p, i);
+      var name = info.name.replace(/\[0\]$/, '');
+      uniforms[name] = gl.getUniformLocation(p, info.name);
+    }
+    return { program: p, uniforms: uniforms };
+  }
+  function setF(u, name, v) { if (u[name] !== undefined) gl.uniform1f(u[name], v); }
+  function setI(u, name, v) { if (u[name] !== undefined) gl.uniform1i(u[name], v); }
+  function set2(u, name, v) { if (u[name] !== undefined) gl.uniform2fv(u[name], v); }
+  function set3(u, name, v) { if (u[name] !== undefined) gl.uniform3fv(u[name], v); }
+  function bindTex(u, name, tex, unit) {
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    setI(u, name, unit);
+  }
+
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+
+  // ---------------------------------------------------------------
+  // fullscreen quad
+  // ---------------------------------------------------------------
+  var VS = '#version 300 es\n' +
+    'layout(location=0) in vec2 position;\n' +
+    'layout(location=1) in vec2 uv;\n' +
+    'out vec2 vUv;\n' +
+    'void main(){ vUv = uv; gl_Position = vec4(position, 0.0, 1.0); }';
+
+  var quadVAO = gl.createVertexArray();
+  gl.bindVertexArray(quadVAO);
+  var posBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  var uvBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+
+  function drawQuad() {
+    gl.bindVertexArray(quadVAO);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  // ---------------------------------------------------------------
+  // fragment shaders
+  // ---------------------------------------------------------------
+
+  // Vignette pass reimagined as the jewel's core: instead of a single flat
+  // color, it samples the gradient texture around the angle from the
+  // pointer, so hue rotates around the highlight like light splitting
+  // through a facet. Solid at the core, fading to transparent outward
+  // (flipped from the original's inside-out direction) so it reads as a
+  // glowing gem sitting on white, rather than a dark ring.
+  var FS_VIGNETTE =
+    '#version 300 es\n' +
+    'precision highp float;\n' +
+    '#define TWO_PI 6.28318530718\n' +
+    'in vec2 vUv; out vec4 fragColor;\n' +
+    'uniform float uRadius, uFalloff, uSkew, uAngle, uSpin;\n' +
+    'uniform vec3 uClearColor;\n' +
+    'uniform vec2 uPos, uResolution;\n' +
+    'uniform sampler2D tGradient;\n' +
+    'mat2 rot(float a){ return mat2(cos(a),-sin(a),sin(a),cos(a)); }\n' +
+    'void main(){\n' +
+    '  vec2 aspectRatio = vec2(uResolution.x/uResolution.y, 1.0);\n' +
+    '  vec2 skew = vec2(uSkew, 1.0 - uSkew);\n' +
+    '  vec2 rel = (vUv - uPos) * aspectRatio * rot(uAngle * TWO_PI) * skew;\n' +
+    '  float radius = length(rel);\n' +
+    '  float halfRadius = uRadius * 0.5;\n' +
+    '  float innerEdge = halfRadius - uFalloff * halfRadius * 0.5;\n' +
+    '  float outerEdge = halfRadius + uFalloff * halfRadius * 0.5;\n' +
+    '  float falloff = smoothstep(innerEdge, outerEdge, radius);\n' +
+    '  float ang = atan(rel.y, rel.x) / TWO_PI + 0.5 + uSpin;\n' +
+    '  vec3 gradColor = texture(tGradient, vec2(fract(ang), 0.5)).rgb;\n' +
+    '  fragColor = mix(vec4(gradColor, 1.), vec4(uClearColor, 0.), falloff);\n' +
+    '}';
+
+  var FS_SINE =
+    '#version 300 es\n' +
+    'precision mediump float;\n' +
+    '#define PI3 1.04709283144\n' +
+    'in vec2 vUv; out vec4 fragColor;\n' +
+    'uniform sampler2D tInput;\n' +
+    'uniform float uMixRadius, uFrequency, uAmplitude, uRotation, uTime, uTrackMouse;\n' +
+    'uniform vec2 uPos, uResolution, uMousePos;\n' +
+    'void main(){\n' +
+    '  vec2 uv = vUv;\n' +
+    '  vec2 waveCoord = vUv.xy * 2.0 - 1.0;\n' +
+    '  float time = uTime * 0.25;\n' +
+    '  float frequency = 20.0 * uFrequency;\n' +
+    '  float amp = uAmplitude * 0.2;\n' +
+    '  float waveX = sin((waveCoord.y + uPos.y) * frequency + (time * PI3)) * amp;\n' +
+    '  float waveY = sin((waveCoord.x - uPos.x) * frequency + (time * PI3)) * amp;\n' +
+    '  waveCoord.xy += vec2(mix(waveX, 0., uRotation), mix(0., waveY, uRotation));\n' +
+    '  vec2 finalUV = waveCoord * 0.5 + 0.5;\n' +
+    '  float aspectRatio = uResolution.x/uResolution.y;\n' +
+    '  vec2 mPos = uPos + mix(vec2(0), (uMousePos-0.5), uTrackMouse);\n' +
+    '  vec2 pos = mix(uPos, mPos, floor(uMixRadius));\n' +
+    '  float dist = (max(0.,1.-distance(uv * vec2(aspectRatio,1), mPos * vec2(aspectRatio,1)) * 4. * (1. - uMixRadius)));\n' +
+    '  uv = mix(uv, finalUV, dist);\n' +
+    '  fragColor = texture(tInput, uv);\n' +
+    '}';
+
+  var FS_SHATTER =
+    '#version 300 es\n' +
+    'precision mediump float;\n' +
+    '#define PI 3.14159265359\n' +
+    'in vec2 vUv; out vec4 fragColor;\n' +
+    'uniform sampler2D tInput;\n' +
+    'uniform float uAmount, uSpread, uAngle, uTime, uSkew, uMixRadius, uTrackMouse;\n' +
+    'uniform vec2 uPos, uResolution, uMousePos;\n' +
+    'vec2 random2(vec2 p){ return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453); }\n' +
+    'mat2 rot(float a){ return mat2(cos(a),-sin(a),sin(a),cos(a)); }\n' +
+    'void main(){\n' +
+    '  vec2 uv = vUv;\n' +
+    '  float aspectRatio = uResolution.x/uResolution.y;\n' +
+    '  vec2 skew = mix(vec2(1), vec2(1,0), uSkew);\n' +
+    '  vec2 st = (uv - uPos) * vec2(aspectRatio,1.) * 50. * uAmount;\n' +
+    '  st = st * rot(uAngle * 2. * PI) * skew;\n' +
+    '  vec2 i_st = floor(st);\n' +
+    '  vec2 f_st = fract(st);\n' +
+    '  float m_dist = 15.;\n' +
+    '  vec2 m_point; vec2 d;\n' +
+    '  for (int j=-1;j<=1;j++){ for (int i=-1;i<=1;i++){\n' +
+    '    vec2 neighbor = vec2(float(i),float(j));\n' +
+    '    vec2 point = random2(i_st + neighbor);\n' +
+    '    point = 0.5 + 0.5 * sin(5. + uTime * 0.2 + 6.2831*point);\n' +
+    '    vec2 diff = neighbor + point - f_st;\n' +
+    '    float dist = length(diff);\n' +
+    '    if (dist < m_dist){ m_dist = dist; m_point = point; d = diff; }\n' +
+    '  }}\n' +
+    '  vec2 offset = (m_point * 0.2 * uSpread * 2.) - (uSpread * 0.2);\n' +
+    '  vec2 mPos = uPos + mix(vec2(0), (uMousePos-0.5), uTrackMouse);\n' +
+    '  vec2 pos = mix(uPos, mPos, floor(uMixRadius));\n' +
+    '  float dist = (max(0.,1.-distance(uv * vec2(aspectRatio,1), mPos * vec2(aspectRatio,1)) * 4. * (1. - uMixRadius)));\n' +
+    '  fragColor = texture(tInput, uv + offset * dist);\n' +
+    '}';
+
+  var FS_BOKEH =
+    '#version 300 es\n' +
+    'precision highp float;\n' +
+    'in vec2 vUv; out vec4 fragColor;\n' +
+    '#define PI 3.14159265\n' +
+    '#define PI2 6.28318530718\n' +
+    '#define ITERATIONS 50.0\n' +
+    '#define GOLDEN_ANGLE 2.39996323\n' +
+    'uniform sampler2D tInput, tBlueNoise;\n' +
+    'uniform float uAmount, uTilt, uTime, uTrackMouse;\n' +
+    'uniform vec2 uPos, uResolution, uMousePos, uBlueNoiseResolution;\n' +
+    'vec2 Sample(in float theta, inout float r){ r += 1.0/r; return (r-1.0)*vec2(cos(theta),sin(theta)); }\n' +
+    'float getBlueNoiseOffset(vec2 st){\n' +
+    '  ivec2 texSize = ivec2(uBlueNoiseResolution);\n' +
+    '  vec4 blueNoise = texelFetch(tBlueNoise, ivec2(fract(st * (uResolution)/vec2(texSize) * vec2(texSize.x/texSize.y,1.0)) * vec2(texSize)) % texSize, 0);\n' +
+    '  return mod((blueNoise.r - 0.5) * PI2, PI2);\n' +
+    '}\n' +
+    'vec4 Bokeh(sampler2D tex, vec2 uv, float blurRadius){\n' +
+    '  vec3 accumulatedColor = vec3(0.0);\n' +
+    '  vec3 accumulatedWeights = vec3(0.0);\n' +
+    '  float accumulatedAlpha = 0.0;\n' +
+    '  float aspectRatio = uResolution.x/uResolution.y;\n' +
+    '  vec2 pixelSize = vec2(1.0/aspectRatio,1.0) * 0.04 * 0.075;\n' +
+    '  float r = 1.0;\n' +
+    '  float noiseOffset = (getBlueNoiseOffset(uv) - 0.5) * 0.01;\n' +
+    '  float noiseAngle = noiseOffset * PI2;\n' +
+    '  mat2 rotationMatrix = mat2(cos(noiseAngle),-sin(noiseAngle),sin(noiseAngle),cos(noiseAngle));\n' +
+    '  for (float j = 0.0; j < GOLDEN_ANGLE * ITERATIONS; j += GOLDEN_ANGLE) {\n' +
+    '    vec2 offset = Sample(j, r) * pixelSize;\n' +
+    '    float jitterAmount = 0.05 * (sin(j * 0.1) * 0.5 + 0.5);\n' +
+    '    offset *= 1.0 + jitterAmount * sin(j * 0.7 + noiseOffset);\n' +
+    '    vec2 sampleOffset = rotationMatrix * offset;\n' +
+    '    vec4 colorSample = texture(tex, uv + sampleOffset);\n' +
+    '    vec3 bokehWeight = vec3(5.0) + pow(colorSample.rgb, vec3(9.0)) * 150.0;\n' +
+    '    accumulatedAlpha += colorSample.a;\n' +
+    '    accumulatedColor += colorSample.rgb * bokehWeight;\n' +
+    '    accumulatedWeights += bokehWeight;\n' +
+    '  }\n' +
+    '  return vec4(accumulatedColor/accumulatedWeights, accumulatedAlpha/ITERATIONS);\n' +
+    '}\n' +
+    'void main(){\n' +
+    '  vec2 uv = vUv;\n' +
+    '  if (uAmount == 0.0) { fragColor = vec4(0.0); return; }\n' +
+    '  vec2 pos = uPos + mix(vec2(0), (uMousePos-0.5), uTrackMouse);\n' +
+    '  float dis = distance(uv, pos) * 1000.0;\n' +
+    '  float tilt = mix(1.0 - dis*0.001, dis*0.001, uTilt);\n' +
+    '  float blurRadius = uAmount * tilt;\n' +
+    '  fragColor = Bokeh(tInput, uv, blurRadius);\n' +
+    '}';
+
+  // Output pass: composites the FX chain onto white, with a small
+  // chromatic-aberration split (RGB sampled at slightly offset radii from
+  // the pointer) to sell the "light splitting through glass" feel.
+  var FS_OUTPUT =
+    '#version 300 es\n' +
+    'precision highp float;\n' +
+    'in vec2 vUv; out vec4 fragColor;\n' +
+    'uniform sampler2D tInput;\n' +
+    'uniform vec3 uBgColor, uOutputColor;\n' +
+    'uniform vec2 uPos, uResolution;\n' +
+    'uniform float uAberration, uBlendStrength;\n' +
+    'void main(){\n' +
+    '  vec2 aspect = vec2(uResolution.x/uResolution.y, 1.0);\n' +
+    '  vec2 dir = (vUv - uPos) * aspect;\n' +
+    '  float len = length(dir);\n' +
+    '  vec2 dirN = len > 0.0001 ? dir / len : vec2(0.0);\n' +
+    '  dirN /= aspect;\n' +
+    '  float aberr = uAberration;\n' +
+    '  vec4 cR = texture(tInput, vUv + dirN * aberr);\n' +
+    '  vec4 cG = texture(tInput, vUv);\n' +
+    '  vec4 cB = texture(tInput, vUv - dirN * aberr);\n' +
+    '  vec3 chainColor = vec3(cR.r, cG.g, cB.b);\n' +
+    '  float chainAlpha = cG.a;\n' +
+    '  vec3 base = uBgColor;\n' +
+    '  vec3 blend = mix(uOutputColor, chainColor, chainAlpha);\n' +
+    '  fragColor.a = 1.;\n' +
+    '  fragColor.rgb = base * mix(vec3(1.), blend, uBlendStrength);\n' +
+    '}';
+
+  var vignetteProg = createProgram(VS, FS_VIGNETTE);
+  var sineProg = createProgram(VS, FS_SINE);
+  var shatterProg = createProgram(VS, FS_SHATTER);
+  var bokehProg = createProgram(VS, FS_BOKEH);
+  var outputProg = createProgram(VS, FS_OUTPUT);
+
+  // ---------------------------------------------------------------
+  // framebuffers
+  // ---------------------------------------------------------------
+  function createFBO() {
+    var tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    var fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { fbo: fbo, tex: tex, w: 1, h: 1 };
+  }
+  function resizeFBO(f, w, h) {
+    f.w = w; f.h = h;
+    gl.bindTexture(gl.TEXTURE_2D, f.tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  }
+
+  var bufferRead = createFBO();
+  var bufferWrite = createFBO();
+  function swap() { var t = bufferRead; bufferRead = bufferWrite; bufferWrite = t; }
+
+  // ---------------------------------------------------------------
+  // textures: gradient ring (from the supplied stops) + blue noise
+  // ---------------------------------------------------------------
+  function makeJewelGradientTexture() {
+    var c = document.createElement('canvas');
+    c.width = 512; c.height = 1;
+    var ctx = c.getContext('2d');
+    var g = ctx.createLinearGradient(0, 0, 512, 0);
+    g.addColorStop(0.00, '#FA4288');
+    g.addColorStop(0.42, '#FB8E97');
+    g.addColorStop(0.63, '#FF836B');
+    g.addColorStop(0.86, '#FEE253');
+    g.addColorStop(1.00, '#FA4288'); // wraps back so the angular lookup has no seam
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 1);
+    var tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    return tex;
+  }
+  function makeBlueNoiseTexture(size) {
+    var data = new Uint8Array(size * size * 4);
+    for (var i = 0; i < size * size; i++) {
+      data[i * 4 + 0] = (Math.random() * 256) | 0;
+      data[i * 4 + 1] = (Math.random() * 256) | 0;
+      data[i * 4 + 2] = 0;
+      data[i * 4 + 3] = 255;
+    }
+    var tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    return tex;
+  }
+
+  var gradientTex = makeJewelGradientTexture();
+  var blueNoiseTex = makeBlueNoiseTexture(256);
+
+  // ---------------------------------------------------------------
+  // settings
+  // ---------------------------------------------------------------
+  var settings = {
+    resolution: [1, 1],
+    blueNoiseResolution: [6, 6],
+    background: { color: '#ffffff' },
+    vignette: { radius: 0.5, falloff: 0.9, skew: 0.54, angle: 0 },
+    sine: { frequency: 0.32, amplitude: 7.4, rotation: 0, mixRadius: 0.8, trackMouse: 1 },
+    shatter: { scale: 0.8, amount: 0.5, angle: 44, skew: 0.9, mixRadius: 1, trackMouse: 1 }, //play with scale and amount
+    bokeh: { radius: 0.42, tilt: 0.5, mixRadius: 1, trackMouse: 0 },
+    output: { color: '#ffffff', aberration: 0.006, blendStrength: 0.85 }
+  };
+  var bgColorVec = hexToRgb(settings.background.color);
+  var outputColorVec = hexToRgb(settings.output.color);
+
+  var MULTIPLIER = 0.6;
+
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    var w = Math.max(1, Math.floor(canvas.width * MULTIPLIER));
+    var h = Math.max(1, Math.floor(canvas.height * MULTIPLIER));
+    settings.resolution = [w, h];
+    resizeFBO(bufferRead, w, h);
+    resizeFBO(bufferWrite, w, h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------------------------------------------------------------
+  // pointer tracking
+  // ---------------------------------------------------------------
+  var pointer = [0.5, 0.5];
+  var currPointer = [0.5, 0.5];
+  window.addEventListener('pointermove', function (e) {
+    var r = canvas.getBoundingClientRect();
+    pointer[0] = (e.clientX - r.left) / r.width;
+    pointer[1] = 1 - (e.clientY - r.top) / r.height;
+  }, { passive: true });
+
+  var stopped = false;
+  var credit = document.getElementById('credit');
+  var fadeTimer = setTimeout(function () { credit.classList.add('fade'); }, 4000);
+  canvas.addEventListener('dblclick', function () {
+    stopped = !stopped;
+    credit.classList.remove('fade');
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(function () { credit.classList.add('fade'); }, 2000);
+  });
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------------------------------------------------------------
+  // per-pass draw functions
+  // ---------------------------------------------------------------
+  function drawVignette(target) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.viewport(0, 0, target.w, target.h);
+    gl.useProgram(vignetteProg.program);
+    var u = vignetteProg.uniforms;
+    bindTex(u, 'tGradient', gradientTex, 0);
+    set2(u, 'uResolution', settings.resolution);
+    setF(u, 'uRadius', settings.vignette.radius);
+    setF(u, 'uFalloff', settings.vignette.falloff);
+    setF(u, 'uSkew', settings.vignette.skew);
+    setF(u, 'uAngle', settings.vignette.angle);
+    setF(u, 'uSpin', elapsed * 0.035);
+    set2(u, 'uPos', currPointer);
+    set3(u, 'uClearColor', bgColorVec);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawQuad();
+  }
+
+  function drawSine(target, inputTex) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.viewport(0, 0, target.w, target.h);
+    gl.useProgram(sineProg.program);
+    var u = sineProg.uniforms;
+    bindTex(u, 'tInput', inputTex, 0);
+    setF(u, 'uMixRadius', settings.sine.mixRadius);
+    set2(u, 'uPos', [0.5, 0.5]);
+    setF(u, 'uFrequency', settings.sine.frequency);
+    setF(u, 'uAmplitude', settings.sine.amplitude);
+    setF(u, 'uRotation', settings.sine.rotation);
+    setF(u, 'uTime', elapsed);
+    set2(u, 'uResolution', settings.resolution);
+    set2(u, 'uMousePos', currPointer);
+    setF(u, 'uTrackMouse', settings.sine.trackMouse);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawQuad();
+  }
+
+  function drawShatter(target, inputTex) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.viewport(0, 0, target.w, target.h);
+    gl.useProgram(shatterProg.program);
+    var u = shatterProg.uniforms;
+    bindTex(u, 'tInput', inputTex, 0);
+    set2(u, 'uResolution', settings.resolution);
+    setF(u, 'uAngle', settings.shatter.angle / 360);
+    setF(u, 'uAmount', settings.shatter.scale);
+    setF(u, 'uSpread', settings.shatter.amount);
+    setF(u, 'uSkew', settings.shatter.skew);
+    setF(u, 'uTime', elapsed);
+    set2(u, 'uPos', [0.5, 0.5]);
+    setF(u, 'uMixRadius', settings.shatter.mixRadius);
+    set2(u, 'uMousePos', currPointer);
+    setF(u, 'uTrackMouse', settings.shatter.trackMouse);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawQuad();
+  }
+
+  function drawBokeh(target, inputTex) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.viewport(0, 0, target.w, target.h);
+    gl.useProgram(bokehProg.program);
+    var u = bokehProg.uniforms;
+    bindTex(u, 'tInput', inputTex, 0);
+    bindTex(u, 'tBlueNoise', blueNoiseTex, 1);
+    set2(u, 'uBlueNoiseResolution', settings.blueNoiseResolution);
+    set2(u, 'uResolution', settings.resolution);
+    setF(u, 'uAmount', settings.bokeh.radius);
+    setF(u, 'uTilt', settings.bokeh.tilt);
+    setF(u, 'uTime', elapsed);
+    set2(u, 'uPos', [0.5, 0.5]);
+    setF(u, 'uMixRadius', settings.bokeh.mixRadius);
+    set2(u, 'uMousePos', currPointer);
+    setF(u, 'uTrackMouse', settings.bokeh.trackMouse);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawQuad();
+  }
+
+  function drawOutput(inputTex) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.useProgram(outputProg.program);
+    var u = outputProg.uniforms;
+    bindTex(u, 'tInput', inputTex, 0);
+    set3(u, 'uOutputColor', outputColorVec);
+    set3(u, 'uBgColor', bgColorVec);
+    set2(u, 'uPos', currPointer);
+    set2(u, 'uResolution', [canvas.width, canvas.height]);
+    setF(u, 'uAberration', settings.output.aberration);
+    setF(u, 'uBlendStrength', settings.output.blendStrength);
+    gl.clearColor(bgColorVec[0], bgColorVec[1], bgColorVec[2], 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawQuad();
+  }
+
+  // ---------------------------------------------------------------
+  // render loop
+  // ---------------------------------------------------------------
+  var last = performance.now();
+  var elapsed = 0;
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    var delta = now - last;
+    last = now;
+
+    var smoothing = stopped ? 0 : 0.1;
+    currPointer[0] = lerp(currPointer[0], pointer[0], smoothing);
+    currPointer[1] = lerp(currPointer[1], pointer[1], smoothing);
+    if (!stopped && !reduceMotion) elapsed += (delta / 1000) * 2;
+
+    drawVignette(bufferWrite);
+    swap();
+
+    drawSine(bufferWrite, bufferRead.tex);
+    swap();
+
+    drawShatter(bufferWrite, bufferRead.tex);
+    swap();
+
+    drawBokeh(bufferWrite, bufferRead.tex);
+    swap();
+
+    drawOutput(bufferRead.tex);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
