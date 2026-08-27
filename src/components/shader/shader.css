@@ -3,16 +3,17 @@
    composes, nothing is generated here. Self-contained: copy this file
    alongside the component's .js/.jsx files into any React project.
 
-   Unlike the exported index.pen.html (a fullscreen page takeover), the
-   host here just fills its parent — position the component itself
-   (fixed/absolute/a normal flex child) from the outside, the way any other
-   component in this design system is placed. */
+   Same fullscreen page takeover as the exported index.pen.html: the host
+   is fixed to the entire viewport by default. Override `position`/`inset`/
+   `width`/`height` via `style`/`className` if a given usage needs the jewel
+   scoped to a smaller container instead. */
 
 .shader {
-  position: relative;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: #ffffff;
 }
 
@@ -33,7 +34,15 @@
    overrides (e.g. analytics selectors) — the jewel's actual gradient comes
    from shader-variants.js + the WebGL texture, not from these empty rule
    bodies. */
-.shader--enterprise,
 .shader--services,
-.shader--industries {
+.shader--industries,
+.shader--engagement,
+.shader--about,
+.shader--contact,
+.shader--hll-ai,
+.shader--hll-trust,
+.shader--hll-foundation,
+.shader--hll-ontology,
+.shader--hll-people,
+.shader--hll-application {
 }
