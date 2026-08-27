@@ -23,7 +23,22 @@ export function createShaderFX(canvas, options = {}) {
   // beneath it, no matter what the shader itself outputs.
   const transparentBg = !!settings.background.transparent;
 
-  const gl = canvas.getContext('webgl2', { antialias: false, alpha: transparentBg, preserveDrawingBuffer: false });
+  // `premultipliedAlpha: false` matches the reference index.pen.html
+  // export exactly — the output pass (FS_OUTPUT below) writes straight
+  // (unpremultiplied) alpha: `fragColor.rgb` is the full-strength blended
+  // color regardless of `fragColor.a`. The browser's default
+  // (`premultipliedAlpha: true`) instead assumes rgb is already scaled by
+  // alpha, and darkens/washes out every partially-transparent pixel when
+  // compositing the canvas onto the page — exactly the "doesn't blend like
+  // the reference" symptom this fixes: `mix-blend-mode: hard-light` reads
+  // its backdrop the same either way, but the canvas's own colors going
+  // into that blend were wrong without this.
+  const gl = canvas.getContext('webgl2', {
+    antialias: false,
+    alpha: transparentBg,
+    premultipliedAlpha: false,
+    preserveDrawingBuffer: false,
+  });
   if (!gl) {
     console.warn('Shader: WebGL2 is not available in this browser — the effect will not render.');
     return { dispose() {} };
@@ -293,9 +308,16 @@ export function createShaderFX(canvas, options = {}) {
     // collapses to the top color outright once its alpha is 1 and its
     // value is 1 in every channel — so there's no second element or
     // blend-mode switch needed to "remove" hard-light at uCapAmount == 1;
-    // it already reads as a plain solid cap by then.
-    '  vec3 transparentRgb = mix(blend, uOutputColor, uCapAmount);\n' +
-    '  float transparentAlpha = mix(chainAlpha, 1., uCapAmount);\n' +
+    // it already reads as a plain solid cap by then. At uCapAmount == 0
+    // this branch is exactly the reference index.pen.html export's own
+    // (unconditional) output formula — `base * mix(1, blend, blendStrength)`
+    // for rgb, `chainAlpha * blendStrength` for alpha — the reference never
+    // has a transparent/opaque split at all, so matching its math here is
+    // what makes uTransparent's "true" branch actually look like it.
+    '  vec3 transparentRestRgb = base * mix(vec3(1.), blend, uBlendStrength);\n' +
+    '  float transparentRestAlpha = chainAlpha * uBlendStrength;\n' +
+    '  vec3 transparentRgb = mix(transparentRestRgb, uOutputColor, uCapAmount);\n' +
+    '  float transparentAlpha = mix(transparentRestAlpha, 1., uCapAmount);\n' +
     '  fragColor.rgb = mix(opaqueRgb, transparentRgb, uTransparent);\n' +
     '  fragColor.a = mix(1., transparentAlpha, uTransparent);\n' +
     '}';
