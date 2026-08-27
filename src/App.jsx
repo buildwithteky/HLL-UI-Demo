@@ -4,6 +4,7 @@ import { Ripple } from './components/ripple';
 import { CornerRipple } from './components/cornerripple';
 import { OurPromise } from './components/our-promise';
 import { Tag } from './components/tag';
+import { Shader } from './components/shader';
 
 // This demonstrates the actual reusable components — same imports a
 // consumer app would use — not a separate demo-only implementation.
@@ -34,10 +35,15 @@ export default function App() {
       {/* <CornerRipple variant="industries" /> */}
 
       {/* Tags */}
-      <Tag variant="warm">Warm</Tag>
-      <Tag variant="cool">Cool</Tag>
+      {/* <Tag variant="warm">Warm</Tag>
+      <Tag variant="cool">Cool</Tag> */}
 
       {/* <OurPromise/> */}
+
+      {/* Shader */}
+      <div style={{ width: '100%', height: '100vh' }}>
+        <Shader variant="enterprise" />
+      </div>
     </>
   );
 }
