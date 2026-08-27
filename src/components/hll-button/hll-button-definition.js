@@ -8,9 +8,9 @@
 //
 // Re-copy this file from Studio any time the base preset's shape, effects,
 // interaction, typography, or render mode change there. The `params.base` /
-// `params.hover` color fields below are what Studio's own preset currently
-// uses (the "enterprise" look) — hll-button-variants.js overrides them per
-// variant at mount time; it never touches anything else in this object.
+// `params.hover` color fields below are Studio's own preset colors —
+// hll-button-variants.js overrides them per variant at mount time; it never
+// touches anything else in this object.
 export const BASE_DEFINITION = {
   "box": {
     "auto": false,

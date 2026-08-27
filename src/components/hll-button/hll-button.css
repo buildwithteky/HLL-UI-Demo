@@ -48,6 +48,8 @@
   z-index: 1;
   display: inline-block;
   color: var(--hll-label-color, #808080);
+  text-transform: uppercase;
+  font-weight: 400;
   transition: color 0.25s ease;
 }
 
@@ -83,7 +85,15 @@
 .hll-button--sm,
 .hll-button--md,
 .hll-button--lg,
-.hll-button--enterprise,
 .hll-button--services,
-.hll-button--industries {
+.hll-button--industries,
+.hll-button--engagement,
+.hll-button--about,
+.hll-button--contact,
+.hll-button--hll-ai,
+.hll-button--hll-trust,
+.hll-button--hll-foundation,
+.hll-button--hll-ontology,
+.hll-button--hll-people,
+.hll-button--hll-application {
 }

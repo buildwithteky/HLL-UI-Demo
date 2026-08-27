@@ -45,7 +45,7 @@ plugin.
 import { HLLButton } from "./components/hll-button";
 
 export default function Example() {
-  return <HLLButton variant="enterprise">Enterprise</HLLButton>;
+  return <HLLButton variant="services">Services</HLLButton>;
 }
 ```
 
@@ -59,24 +59,36 @@ yourself.
 
 | Variant | Usage | Gradient |
 | --- | --- | --- |
-| `enterprise` | Enterprise page/navigation | #10b981 → #3b82f6 |
-| `services` | Services page/navigation | #ff80ca → #8786e6 → #007fd2 |
-| `industries` | Industries page/navigation | #fa4288 → #ff836b → #fee253 |
+| `services` | Services menu item | #F7A567 → #E05A35 → #EB3B3E |
+| `industries` | Industries menu item | #0352B2 → #037A9F → #6460D5 |
+| `engagement` | Engagement menu item | #F9B535 → #FF9126 → #FF6302 |
+| `about` | About menu item | #9AB4D3 → #A28DD7 → #AD7ECF |
+| `contact` | Contact menu item | #ABBFFF → #2BB4EB → #076EB8 |
+| `hll-ai` | hll-ai service | #3773FF → #BCA6D6 |
+| `hll-trust` | hll-trust service | #129562 → #7CBAAA |
+| `hll-foundation` | hll-foundation service | #FF5A1E → #CC8B93 |
+| `hll-ontology` | hll-ontology service | #7455FF → #FFB26A |
+| `hll-people` | hll-people service | #FF9042 → #FFEEC7 |
+| `hll-application` | hll-application service | #FF1F1F → #72AAFF |
 
 This table is generated from `VARIANT_GRADIENTS` in `hll-button-variants.js`
 — the single source of truth for variant data — via
 `node scripts/print-hll-button-variants.mjs` (dev-only, not part of this
 folder). Re-run it after adding a variant instead of hand-editing this table.
 
-`enterprise`'s colors are Studio's own saved "HLL Button" preset, verbatim.
-`services` / `industries` reuse existing LightFX Studio design tokens (the
-`COOL` / `WARM` gradient constants in `src/lightfx/presets.js` in the Studio
-project), trimmed to 3 stops, rather than inventing new colors.
+`services`/`industries`/`engagement`/`about`/`contact` are the top nav
+menu's own 3-stop gradients (the design spec), shared verbatim with
+`shader-variants.js` and `bottom-shader-variants.js` so the button and both
+shader effects always match for the same menu item. The `hll-*` variants are
+one fixed 2-color gradient per service, shared the same way across every
+component for that service.
 
 ```tsx
-<HLLButton variant="enterprise">Enterprise</HLLButton>
 <HLLButton variant="services">Services</HLLButton>
 <HLLButton variant="industries">Industries</HLLButton>
+<HLLButton variant="engagement">Engagement</HLLButton>
+<HLLButton variant="about">About</HLLButton>
+<HLLButton variant="contact">Contact</HLLButton>
 ```
 
 ## Interaction States
@@ -99,7 +111,7 @@ project), trimmed to 3 stops, rather than inventing new colors.
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `variant` | `"enterprise" \| "services" \| "industries"` | `"enterprise"` | Selects the predefined gradient. |
+| `variant` | `"services" \| "industries" \| "engagement" \| "about" \| "contact" \| "hll-ai" \| "hll-trust" \| "hll-foundation" \| "hll-ontology" \| "hll-people" \| "hll-application"` | `"services"` | Selects the predefined gradient. |
 | `children` | `ReactNode` | — | The button's label. |
 | `as` | `ElementType` | `"button"` | Render as a different tag, e.g. `as="a"`. |
 | `gradient` | `string[]` (2–3 hex) | — | One-off override of the variant's colors. |
@@ -116,7 +128,7 @@ project), trimmed to 3 stops, rather than inventing new colors.
 
 **Safe to pass:**
 
-- `variant` — `"enterprise" | "services" | "industries"` (or any variant you add).
+- `variant` — `"services" | "industries" | "engagement" | "about" | "contact"` (or any per-service/other variant you add).
 - `as` — render as a different tag (e.g. `as="a"` for a link that looks like this button). Defaults to `"button"`.
 - `size`, `disabled`, `isLoading`.
 - `className`, `style` — merged onto the host element; use these for layout (margins, grid placement), not for visual overrides.
@@ -129,11 +141,11 @@ project), trimmed to 3 stops, rather than inventing new colors.
 
 ```tsx
 <HLLButton
-  variant="enterprise"
+  variant="services"
   gradient={["#00B894", "#00C6FF", "#4D7CFE"]}
   direction={45}
 >
-  Enterprise
+  Services
 </HLLButton>
 ```
 
@@ -144,10 +156,12 @@ else needs a new component:
 
 ```js
 export const VARIANT_GRADIENTS = {
-  enterprise: { colors: ['#10b981', '#3b82f6'], usage: 'Enterprise page/navigation' },
-  services: { colors: ['#ff80ca', '#8786e6', '#007fd2'], usage: 'Services page/navigation' },
-  industries: { colors: ['#fa4288', '#ff836b', '#fee253'], usage: 'Industries page/navigation' },
-  about: { colors: ['#a78bfa', '#7dd3fc'], usage: 'About page/navigation' }, // new
+  services: { colors: ['#F7A567', '#E05A35', '#EB3B3E'], usage: 'Services menu item' },
+  industries: { colors: ['#0352B2', '#037A9F', '#6460D5'], usage: 'Industries menu item' },
+  engagement: { colors: ['#F9B535', '#FF9126', '#FF6302'], usage: 'Engagement menu item' },
+  about: { colors: ['#9AB4D3', '#A28DD7', '#AD7ECF'], usage: 'About menu item' },
+  contact: { colors: ['#ABBFFF', '#2BB4EB', '#076EB8'], usage: 'Contact menu item' },
+  pricing: { colors: ['#a78bfa', '#7dd3fc'], usage: 'Pricing menu item' }, // new
 };
 ```
 
@@ -156,17 +170,19 @@ not what drives the color):
 
 ```js
 variant: {
-  enterprise: 'hll-button--enterprise',
   services: 'hll-button--services',
   industries: 'hll-button--industries',
-  about: 'hll-button--about', // new
+  engagement: 'hll-button--engagement',
+  about: 'hll-button--about',
+  contact: 'hll-button--contact',
+  pricing: 'hll-button--pricing', // new
 },
 ```
 
-That's it — `<HLLButton variant="about">About</HLLButton>` now works, using
-the same shape/blur/glow/hover/typography as every other variant. Never
-create a new button component for a new page; a new page is a new gradient
-entry, not new code.
+That's it — `<HLLButton variant="pricing">Pricing</HLLButton>` now works,
+using the same shape/blur/glow/hover/typography as every other variant.
+Never create a new button component for a new page; a new page is a new
+gradient entry, not new code.
 
 ## Exported Component
 
@@ -202,8 +218,9 @@ can't literally share a module. The convention:
   identical between the two copies (module-system differences aside —
   Studio's imports the shared `../runtime.js` instead of bundling its own
   copy, since it's already right there).
-- `hll-button-variants.js`'s non-`enterprise` `VARIANT_GRADIENTS` entries
-  (`services`, `industries`, and any new ones) should match too.
+- `hll-button-variants.js`'s `VARIANT_GRADIENTS` entries (`services`,
+  `industries`, `engagement`, `about`, `contact`, and any new ones) should
+  match too.
 - `hll-button-definition.js` here is a frozen snapshot of Studio's live
   preset — re-copy it from Studio's Export panel whenever that preset
   changes (see `hll-button-definition.js`'s own header comment).

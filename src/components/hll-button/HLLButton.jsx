@@ -67,7 +67,7 @@ function buildDefinition(variant, overrides) {
 }
 
 export default function HLLButton({
-  variant = 'enterprise',
+  variant = 'services',
   gradient,
   direction,
   radius,
@@ -102,6 +102,12 @@ export default function HLLButton({
   const isInert = disabled || isLoading;
   const { text, box } = BASE_DEFINITION;
   const scale = SIZE_SCALE[size] ?? 1;
+  // Width follows the label instead of a fixed px value: the button stays
+  // an inline-flex box sized by its content, with equal left/right padding
+  // (BASE_DEFINITION.text.padding, scaled with size) around the label —
+  // so left/right space around the text is always the same regardless of
+  // how long the text is. Height stays fixed, matching every other variant.
+  const hPadding = Math.round(text.padding * scale);
 
   return (
     <Tag
@@ -118,8 +124,10 @@ export default function HLLButton({
         className,
       })}
       style={{
-        width: Math.round(box.width * scale),
         height: Math.round(box.height * scale),
+        paddingLeft: hPadding,
+        paddingRight: hPadding,
+        whiteSpace: 'nowrap',
         '--hll-label-color': text.color,
         '--hll-label-hover-color': text.hoverColor,
         ...style,
@@ -131,7 +139,7 @@ export default function HLLButton({
         style={{
           fontFamily: text.fontFamily || 'inherit',
           fontSize: text.fontSize,
-          fontWeight: text.fontWeight,
+          fontWeight: 400,
           letterSpacing: text.letterSpacing,
         }}
       >
