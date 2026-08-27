@@ -63,14 +63,27 @@
      canvas's own height, regardless of what the host's actual height is. */
 }
 
-/* Only applied when BottomShader's `endShatter` prop is set (the scroll-
-   overlay usage — see ServicesScrollDemo.jsx) — every other usage keeps its
-   existing plain (non-blended) appearance unchanged. `hard-light` is what
-   lets the effect read the page content beneath it while scrolling; it
-   stays applied permanently, through the "scrolled to the end" transition
-   too — see shader-runtime.js's `uCapAmount` for why that transition never
-   needs a second, differently-blended layer or a blend-mode switch. */
-.bottom-shader__canvas--overlay {
+/* Only applied when BottomShader's `overlay`/`endShatter` prop is set (see
+   BottomShader.jsx) — every other usage keeps its existing plain
+   (non-blended) appearance unchanged. `hard-light` is what lets the effect
+   read the page content beneath it.
+
+   Deliberately on the HOST (`.bottom-shader`, `position: fixed`), not on
+   `.bottom-shader__canvas` — mix-blend-mode only mixes with backdrop
+   content that shares the SAME stacking context as the blended element.
+   `.bottom-shader` is itself the fixed-position item that sits alongside
+   sibling content (e.g. ServicesScrollDemo's `<img>`) in the nearest
+   shared stacking context; the canvas is one level further in, inside
+   `.bottom-shader`'s OWN (separate, and otherwise empty) stacking context.
+   Blending on the canvas would only ever mix against that empty local
+   context — nothing to blend with, so it silently falls back to plain
+   alpha compositing, showing uniformly regardless of what's actually
+   behind it instead of reading the page/image the way hard-light should.
+   Blending on the host instead composites the host's own rendered content
+   (the canvas, painted normally within it) as a single unit against the
+   real backdrop one level up, which is what actually reads the page/image
+   correctly. */
+.bottom-shader--overlay {
   mix-blend-mode: hard-light;
 }
 
@@ -89,17 +102,34 @@
    front of* it, from the host's own background color down to see-through.
    `pointer-events: none` keeps it from blocking the mouse-tracked effect
    underneath. */
-.bottom-shader::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
+
+.bottom-shader {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: var(--bottom-shader-height, 25vh);
+  background: transparent;
+
+  -webkit-mask-image: linear-gradient(
     to bottom,
-    var(--bottom-shader-fade-color, #ffffff) 0%,
-    var(--bottom-shader-fade-color, #ffffff) var(--bottom-shader-fade-hold-end, 50%),
-    transparent var(--bottom-shader-fade-solid-start, 65%),
-    transparent 100%
+    transparent 0%,
+    transparent 5%,
+    rgba(0, 0, 0, 0.15) 15%,
+    rgba(0, 0, 0, 0.5) 30%,
+    black 50%,
+    black 100%
+  );
+
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 5%,
+    rgba(0, 0, 0, 0.15) 15%,
+    rgba(0, 0, 0, 0.5) 30%,
+    black 50%,
+    black 100%
   );
 }
 

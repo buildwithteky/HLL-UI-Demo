@@ -44,14 +44,25 @@ const FADE_FRACTION_OF_WINDOW = 0.3;
 // deriving FADE_HOLD_END/FADE_SOLID_START/POINTER_MAX_Y yourself — see
 // HALF_HEIGHT_LAYOUT below for exactly that.
 export function makeBottomShaderLayout(hostHeightPercent, { fadeColor = '#ffffff' } = {}) {
-  const windowStartPercent = 100 - hostHeightPercent; // where the visible window begins within the canvas's own height
   return {
     HOST_HEIGHT: `${hostHeightPercent}vh`,
     CANVAS_HEIGHT,
-    // Anything above FADE_HOLD_END is above the visible window anyway, so
-    // its exact value doesn't otherwise matter.
-    FADE_HOLD_END: windowStartPercent,
-    FADE_SOLID_START: windowStartPercent + FADE_FRACTION_OF_WINDOW * hostHeightPercent,
+    // bottom-shader.css's `::after` fade gradient is sized via `inset: 0`
+    // on `.bottom-shader` itself — i.e. its 0%-100% gradient scale spans
+    // the HOST's own box (hostHeightPercent, e.g. 50vh), not the canvas's
+    // full CANVAS_HEIGHT (100vh) the canvas itself is sized to. These two
+    // values must stay in that same host-relative scale — 0% is the very
+    // top of the visible host, 100% its very bottom — or the gradient
+    // stops land at the wrong height on screen (a previous version
+    // expressed them in canvas-relative terms instead, e.g. 50%/65% for a
+    // 50vh host: on the host's own 0-100% scale that's actually the host's
+    // own top HALF held fully opaque, not the intended top 30% fading in —
+    // invisible while every preset painted an opaque background of its own
+    // underneath anyway, but glaring the moment a transparent,
+    // hard-light-blended preset made that opaque plate the only thing
+    // visible at the top of the strip).
+    FADE_HOLD_END: 0,
+    FADE_SOLID_START: FADE_FRACTION_OF_WINDOW * 100,
     // The color the top edge fades from — should match whatever's behind
     // the host so the blend reads as "fading into the page" rather than a
     // visible seam.
@@ -70,7 +81,7 @@ export function makeBottomShaderLayout(hostHeightPercent, { fadeColor = '#ffffff
 // The default layout every plain `<BottomShader>` usage gets unless it
 // overrides `layout` — a 50vh host, matching the original "Outline
 // Rectangle" / index.pen.html reference export.
-export const DEFAULT_LAYOUT = makeBottomShaderLayout(50);
+export const DEFAULT_LAYOUT = makeBottomShaderLayout(25);
 
 export const { HOST_HEIGHT, FADE_HOLD_END, FADE_SOLID_START, FADE_COLOR, POINTER_MAX_Y } = DEFAULT_LAYOUT;
 

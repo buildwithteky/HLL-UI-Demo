@@ -14,7 +14,7 @@
 // same role as Shader's `colors` prop.
 import { useEffect, useRef } from 'react';
 import { createShaderFX } from '../shader/shader-runtime.js';
-import { BASE_SETTINGS, MULTIPLIER, BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
+import { MULTIPLIER, BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
 import { DEFAULT_LAYOUT } from './bottom-shader-definition.js';
 import { bottomShaderVariants, resolveVariantColors } from './bottom-shader-variants.js';
 import './bottom-shader.css';
@@ -41,7 +41,14 @@ function lerp(a, b, t) {
 export default function BottomShader({
   variant = 'services',
   colors,
-  settings = BASE_SETTINGS,
+  // Required — no default. This used to fall back to Shader's own
+  // BASE_SETTINGS (../shader/shader-definition.js), but every real usage
+  // (see ServicesScrollDemo.jsx's REF_SETTINGS/END_SETTINGS) now needs its
+  // own tuned settings — transparent background, shatter shape, etc. —
+  // that BASE_SETTINGS was never a right fit for anyway (it's Shader's own
+  // opaque full-viewport default, not this crop's). Callers must pass
+  // their own `settings` object explicitly.
+  settings,
   // `atEnd`/`endShatter` together are the "scrolled to the bottom of the
   // page" transition (see ServicesScrollDemo.jsx): when the caller flips
   // `atEnd` to true, shatter.scale/amount smoothly ease toward
@@ -59,6 +66,28 @@ export default function BottomShader({
   // loop, `atEnd` is ignored.
   atEnd = false,
   endShatter,
+  // Applies `mix-blend-mode: hard-light` (bottom-shader.css's
+  // `.bottom-shader--overlay`) to the HOST div, not the canvas, so it reads
+  // whatever's behind it (page UI, an image, ...) instead of sitting on top
+  // as a plain opaque/see-through plate. It has to be the host, not the
+  // canvas: the host is `position: fixed`, which makes it (not the canvas
+  // inside it) the item that actually sits alongside sibling content like
+  // ServicesScrollDemo's `<img>` in the nearest shared stacking context.
+  // Blend-mode only ever mixes with backdrop content INSIDE the same
+  // stacking context as the blended element itself — putting it on the
+  // canvas instead blends against the host's own (empty, transparent)
+  // local context and never reaches the img at all, so the canvas just
+  // renders with plain alpha compositing uniformly regardless of what's
+  // behind it (visible over white just as much as over color) instead of
+  // hard-light's actual behavior (reads as nearly invisible over white,
+  // vivid over saturated color) — this was the actual bug, not a settings/
+  // shader-math issue. Independent of `endShatter`'s shatter/capAmount
+  // ramp — e.g. ServicesScrollDemo toggles just this, off (plain, like the
+  // "reached the true bottom" look) once scrolled to the page's end, on
+  // (blended) everywhere above that — without needing the shatter
+  // transition at all. `endShatter` being set implies this too, for
+  // back-compat with the original always-blended scroll-transition design.
+  overlay = false,
   // Overrides the default 50vh host/fade/pointer-bound layout (see
   // bottom-shader-definition.js's `makeBottomShaderLayout`) — e.g.
   // ServicesScrollDemo's half-height footer strip passes its own here
@@ -90,9 +119,10 @@ export default function BottomShader({
     if (disabled) return undefined;
     // Cloned once per mount so the transition loop below (and the shared
     // `settings` object shader-runtime.js reads live every frame) never
-    // mutates a caller-supplied object or the shared BASE_SETTINGS default
-    // — other BottomShader/Shader instances importing the same constant
-    // would otherwise see their shatter amount silently drift too.
+    // mutates the caller's own settings object — other BottomShader
+    // instances sharing that same object (e.g. two instances both passed
+    // ServicesScrollDemo's REF_SETTINGS) would otherwise see their shatter
+    // amount silently drift too.
     const liveSettings = JSON.parse(JSON.stringify(settings));
     const fx = createShaderFX(canvasRef.current, {
       colors: resolvedColors,
@@ -129,16 +159,17 @@ export default function BottomShader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant, colors?.join(','), pauseOnDoubleClick, disabled, settings, endShatter, layout]);
 
+  const isOverlay = overlay || endShatter;
+
   return (
     <div
-      className={bottomShaderVariants({ variant, disabled: disabled || undefined, className })}
+      className={`${bottomShaderVariants({ variant, disabled: disabled || undefined, className })}${
+        isOverlay ? ' bottom-shader--overlay' : ''
+      }`}
       style={{ ...layoutStyle(layout), ...style }}
       {...rest}
     >
-      <canvas
-        ref={canvasRef}
-        className={`bottom-shader__canvas${endShatter ? ' bottom-shader__canvas--overlay' : ''}`}
-      />
+      <canvas ref={canvasRef} className="bottom-shader__canvas" />
     </div>
   );
 }
