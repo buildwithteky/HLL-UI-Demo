@@ -136,7 +136,7 @@ export default function HLLOutlineButton({
         style={{
           fontFamily: text.fontFamily || 'inherit',
           fontSize: text.fontSize,
-          fontWeight: 400,
+          fontWeight: text.fontWeight,
           letterSpacing: text.letterSpacing,
         }}
       >

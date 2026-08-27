@@ -63,6 +63,7 @@ uniform float u_fillOpacity;
 uniform float u_opacity;
 uniform float u_gradientAngle;
 uniform float u_intensity;
+uniform float u_saturation; /* 1 = unchanged fill colors; 0 = grayscale; >1 boosts it */
 /* multi-stop fill gradient: up to MAX_STOPS colors, sampled by gradientSample()
    below. u_colorCount is how many of the array's entries are actually in
    use (2..MAX_STOPS) — extra slots are ignored. Hover has its own set of
@@ -377,6 +378,13 @@ void main() {
   col += mix(baseCol, vec3(1.0), 0.45) * rim;
   col += glowMix * haze;
   col += glowColorLocal * ring;
+  /* saturation adjusts the composited fill (base + glow/bloom/rim/haze/ring
+     all mixed together already), not just the raw gradient stops — so
+     turning it down also mutes the colored glow/bloom, not just the base
+     fill. Luminance-preserving mix toward grayscale (0) or extrapolated past
+     the original color (>1); 1 leaves col untouched. */
+  float colLum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+  col = mix(vec3(colLum), col, u_saturation);
   col *= u_intensity;
 
   float alpha = max(shapeR, max(shape, shapeB)) * u_fillOpacity;
@@ -421,8 +429,17 @@ const PARAM_TYPES = {
   fillOpacity: 'f',
   opacity: 'f',
   gradientAngle: 'f',
+  saturation: 'f',
   glowColor: 'c',
 };
+
+/* Fallback for a param a saved definition/preset predates (e.g. `saturation`,
+ * added after every existing preset/localStorage/Firebase entry was already
+ * written) — frame() reads through this instead of feeding `undefined`
+ * straight to a uniform, which would otherwise NaN out that whole render.
+ * Every param that's existed since PARAM_TYPES' original set doesn't need an
+ * entry here: real presets/definitions always specify those already. */
+const PARAM_DEFAULTS = { saturation: 1 };
 
 /* Toggling an effect off forces its driving param(s) to zero. */
 const EFFECT_GATES = {
@@ -687,6 +704,7 @@ export class LightComponent {
       u_opacity: { value: 1 },
       u_gradientAngle: { value: 0 },
       u_intensity: { value: 1 },
+      u_saturation: { value: 1 },
       u_colors: { value: Array.from({ length: MAX_COLOR_STOPS }, () => new THREE.Vector3(1, 1, 1)) },
       u_colorsHover: { value: Array.from({ length: MAX_COLOR_STOPS }, () => new THREE.Vector3(1, 1, 1)) },
       u_colorCount: { value: 2 },
@@ -871,9 +889,11 @@ export class LightComponent {
         u['u_' + key + 'Hover'].value.set(b[0], b[1], b[2]);
       } else {
         // each state's own toggle gates its own value, so a hover-only or
-        // base-only effect still interpolates correctly across the blend
-        let bVal = gateFx && effBase[gateFx] === false ? 0 : base[key];
-        let hVal = gateFx && effHover[gateFx] === false ? 0 : hover[key];
+        // base-only effect still interpolates correctly across the blend.
+        // `?? PARAM_DEFAULTS[key]` covers a definition saved before this key
+        // existed (see PARAM_DEFAULTS) rather than feeding `undefined` in.
+        let bVal = gateFx && effBase[gateFx] === false ? 0 : (base[key] ?? PARAM_DEFAULTS[key]);
+        let hVal = gateFx && effHover[gateFx] === false ? 0 : (hover[key] ?? PARAM_DEFAULTS[key]);
         let v = bVal + (hVal - bVal) * k;
         if (key === 'gradientAngle') v = (v * Math.PI) / 180;
         uni.value = v;

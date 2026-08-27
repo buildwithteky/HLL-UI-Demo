@@ -56,7 +56,7 @@ export const BASE_DEFINITION = {
       0.5,
       0.5
     ],
-    "cursorFocusRadius": 0.3,
+    "cursorFocusRadius": 1.75,
     "cursorFocusEdge": 0.5,
     "cursorRadius": 4,
     "cursorEdge": 1,
@@ -68,15 +68,15 @@ export const BASE_DEFINITION = {
   "params": {
     "base": {
       "bloom": 0,
-      "blur": 0.16,
+      "blur": 0,
       "chromatic": 0,
       "colors": [
-        "#191919",
-        "#191919"
+        "#E6E6E6",
+        "#E6E6E6"
       ],
       "fillOpacity": 1,
       "fresnel": 0,
-      "glowColor": "#191919",
+      "glowColor": "#E6E6E6",
       "glowIntensity": 0,
       "glowRadius": 0.3,
       "gradientAngle": 0,
@@ -84,11 +84,12 @@ export const BASE_DEFINITION = {
       "noiseScale": 6,
       "noiseSpeed": 0.3,
       "opacity": 1,
+      "saturation": 1,
       "scatter": 0
     },
     "hover": {
       "bloom": 0,
-      "blur": 0.16,
+      "blur": 1.5,
       "chromatic": 0,
       "colors": [
         "#10b981",
@@ -104,6 +105,7 @@ export const BASE_DEFINITION = {
       "noiseScale": 6,
       "noiseSpeed": 0.3,
       "opacity": 1,
+      "saturation": 1,
       "scatter": 0
     }
   },
@@ -121,14 +123,14 @@ export const BASE_DEFINITION = {
     "strokeWidth": 0.06
   },
   "text": {
-    "content": "BUTTON",
+    "content": "DATA ENGINEERING",
     "fontFamily": "",
     "fontDataUrl": "",
-    "fontSize": 14,
+    "fontSize": 13,
     "letterSpacing": 2,
     "fontWeight": 500,
     "color": "#191919",
-    "padding": 20,
-    "hoverColor": "#ffffff"
+    "padding": 16,
+    "hoverColor": "#191919"
   }
 };
