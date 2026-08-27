@@ -92,7 +92,7 @@ function sketch(p, getPalette, getParams) {
     shaderProgram.setUniform('uContrast', params.contrast);
 
     shaderProgram.setUniform('uPalette', getPalette().flat());
-    shaderProgram.setUniform('uUseCustomPalette', false);
+    shaderProgram.setUniform('uUseCustomPalette', true);
 
     p.rect(-p.width / 2, -p.height / 2, p.width, p.height);
   };
