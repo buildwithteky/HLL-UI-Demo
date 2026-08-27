@@ -22,11 +22,11 @@ import { useEffect, useRef } from 'react';
 import p5 from 'p5';
 import vertSrc from './shader.vert?raw';
 import fragSrc from './shader.frag?raw';
-import { MAX_RIPPLES, BASE_PARAMS, TAP_RIPPLE_MODE } from './ripple-definition.js';
+import { MAX_RIPPLES, TAP_RIPPLE_MODE, resolveVariantParams } from './ripple-definition.js';
 import { rippleVariants, resolveVariantPalette, buildPalette } from './ripple-variants.js';
 import './ripple.css';
 
-function sketch(p, getPalette) {
+function sketch(p, getPalette, getParams) {
   let shaderProgram;
   let ripplePoints = [];
 
@@ -60,7 +60,8 @@ function sketch(p, getPalette) {
     p.background(0);
     p.shader(shaderProgram);
 
-    const spacedPoints = getSpacedRipplePoints(BASE_PARAMS.rippleSpacing);
+    const params = getParams();
+    const spacedPoints = getSpacedRipplePoints(params.rippleSpacing);
 
     const rippleArray = [];
     for (let i = 0; i < MAX_RIPPLES; i++) {
@@ -79,25 +80,25 @@ function sketch(p, getPalette) {
     shaderProgram.setUniform('uTime', p.millis() * 0.001);
     shaderProgram.setUniform('uResolution', [p.width, p.height]);
 
-    shaderProgram.setUniform('uBands', BASE_PARAMS.bands);
-    shaderProgram.setUniform('uSpeed', BASE_PARAMS.speed);
-    shaderProgram.setUniform('uFlowStrength', BASE_PARAMS.flow);
-    shaderProgram.setUniform('uShearStrength', BASE_PARAMS.shear);
-    shaderProgram.setUniform('uRippleShape', BASE_PARAMS.shape);
-    shaderProgram.setUniform('uRippleNoise', BASE_PARAMS.rippleNoise);
-    shaderProgram.setUniform('uRippleGap', BASE_PARAMS.rippleSpacing);
+    shaderProgram.setUniform('uBands', params.bands);
+    shaderProgram.setUniform('uSpeed', params.speed);
+    shaderProgram.setUniform('uFlowStrength', params.flow);
+    shaderProgram.setUniform('uShearStrength', params.shear);
+    shaderProgram.setUniform('uRippleShape', params.shape);
+    shaderProgram.setUniform('uRippleNoise', params.rippleNoise);
+    shaderProgram.setUniform('uRippleGap', params.rippleSpacing);
 
-    shaderProgram.setUniform('uOrigin', [BASE_PARAMS.ox, BASE_PARAMS.oy]);
+    shaderProgram.setUniform('uOrigin', [params.ox, params.oy]);
 
-    shaderProgram.setUniform('uGradientMotion', BASE_PARAMS.motion);
-    shaderProgram.setUniform('uGradientSoftness', BASE_PARAMS.soft);
-    shaderProgram.setUniform('uGradientScale', BASE_PARAMS.scale);
-    shaderProgram.setUniform('uGradientRotation', BASE_PARAMS.rot);
-    shaderProgram.setUniform('uGradientWobble', BASE_PARAMS.wobble);
+    shaderProgram.setUniform('uGradientMotion', params.motion);
+    shaderProgram.setUniform('uGradientSoftness', params.soft);
+    shaderProgram.setUniform('uGradientScale', params.scale);
+    shaderProgram.setUniform('uGradientRotation', params.rot);
+    shaderProgram.setUniform('uGradientWobble', params.wobble);
 
-    shaderProgram.setUniform('uSaturation', BASE_PARAMS.saturation);
-    shaderProgram.setUniform('uVibrancy', BASE_PARAMS.vibrancy);
-    shaderProgram.setUniform('uContrast', BASE_PARAMS.contrast);
+    shaderProgram.setUniform('uSaturation', params.saturation);
+    shaderProgram.setUniform('uVibrancy', params.vibrancy);
+    shaderProgram.setUniform('uContrast', params.contrast);
 
     shaderProgram.setUniform('uPalette', getPalette().flat());
     shaderProgram.setUniform('uUseCustomPalette', false);
@@ -135,8 +136,14 @@ export default function Ripple({ variant = 'enterprise', palette, className, sty
   // HLLButton's hover/active state living outside React.
   paletteRef.current = resolvePalette();
 
+  const paramsRef = useRef(resolveVariantParams(variant));
+  paramsRef.current = resolveVariantParams(variant);
+
   useEffect(() => {
-    const instance = new p5((p) => sketch(p, () => paletteRef.current), hostRef.current);
+    const instance = new p5(
+      (p) => sketch(p, () => paletteRef.current, () => paramsRef.current),
+      hostRef.current
+    );
     return () => instance.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

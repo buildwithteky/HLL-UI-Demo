@@ -12,6 +12,12 @@ export const cornerRippleVariants = cva('corner-ripple', {
       enterprise: 'corner-ripple--enterprise',
       services: 'corner-ripple--services',
       industries: 'corner-ripple--industries',
+      'hll-application': 'corner-ripple--hll-application',
+      'hll-foundation': 'corner-ripple--hll-foundation',
+      'hll-trust-and-governance': 'corner-ripple--hll-trust-and-governance',
+      'hll-people-and-policy': 'corner-ripple--hll-people-and-policy',
+      'hll-ontology': 'corner-ripple--hll-ontology',
+      'hll-ai': 'corner-ripple--hll-ai',
     },
   },
   defaultVariants: {
@@ -24,6 +30,8 @@ export const cornerRippleVariants = cva('corner-ripple', {
  * (and ripple/ripple-variants.js) — kept as a literal copy so this folder
  * stays self-contained and can be copied into another project on its own.
  */
+const HLL_PALETTE = ['#00c7d1', '#299eeb', '#fbcc4d', '#fc8a9e', '#ff5ba3', '#ffc76b'];
+
 export const VARIANT_GRADIENTS = {
   enterprise: {
     colors: ['#10b981', '#3b82f6'],
@@ -36,6 +44,34 @@ export const VARIANT_GRADIENTS = {
   industries: {
     colors: ['#fa4288', '#ff836b', '#fee253'],
     usage: 'Industries page/navigation',
+  },
+  // The HLL service pages all share this same 6-stop palette (only the
+  // ripple/gradient params in cornerripple-definition.js's VARIANT_PARAMS
+  // differ between them) — listed as all 6 stops rather than 2-3 so
+  // buildPalette passes them through unchanged instead of resampling.
+  'hll-application': {
+    colors: HLL_PALETTE,
+    usage: 'HLL application page',
+  },
+  'hll-foundation': {
+    colors: HLL_PALETTE,
+    usage: 'HLL Foundation page',
+  },
+  'hll-trust-and-governance': {
+    colors: HLL_PALETTE,
+    usage: 'HLL Trust and Governance page',
+  },
+  'hll-people-and-policy': {
+    colors: HLL_PALETTE,
+    usage: 'HLL People and Policy page',
+  },
+  'hll-ontology': {
+    colors: HLL_PALETTE,
+    usage: 'HLL Ontology page',
+  },
+  'hll-ai': {
+    colors: HLL_PALETTE,
+    usage: 'HLL AI page',
   },
 };
 

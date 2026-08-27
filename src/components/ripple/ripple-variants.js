@@ -19,6 +19,12 @@ export const rippleVariants = cva('ripple', {
       enterprise: 'ripple--enterprise',
       services: 'ripple--services',
       industries: 'ripple--industries',
+      'hll-application': 'ripple--hll-application',
+      'hll-foundation': 'ripple--hll-foundation',
+      'hll-trust-and-governance': 'ripple--hll-trust-and-governance',
+      'hll-people-and-policy': 'ripple--hll-people-and-policy',
+      'hll-ontology': 'ripple--hll-ontology',
+      'hll-ai': 'ripple--hll-ai',
     },
   },
   defaultVariants: {
@@ -33,6 +39,8 @@ export const rippleVariants = cva('ripple', {
  * button's own README convention. If the button's gradients change, update
  * this map to match.
  */
+const HLL_PALETTE = ['#00c7d1', '#299eeb', '#fbcc4d', '#fc8a9e', '#ff5ba3', '#ffc76b'];
+
 export const VARIANT_GRADIENTS = {
   enterprise: {
     colors: ['#10b981', '#3b82f6'],
@@ -45,6 +53,34 @@ export const VARIANT_GRADIENTS = {
   industries: {
     colors: ['#fa4288', '#ff836b', '#fee253'],
     usage: 'Industries page/navigation',
+  },
+  // The HLL service pages all share this same 6-stop palette (only the
+  // ripple/gradient params in ripple-definition.js's VARIANT_PARAMS differ
+  // between them) — listed as all 6 stops rather than 2-3 so buildPalette
+  // passes them through unchanged instead of resampling.
+  'hll-application': {
+    colors: HLL_PALETTE,
+    usage: 'HLL application page',
+  },
+  'hll-foundation': {
+    colors: HLL_PALETTE,
+    usage: 'HLL Foundation page',
+  },
+  'hll-trust-and-governance': {
+    colors: HLL_PALETTE,
+    usage: 'HLL Trust and Governance page',
+  },
+  'hll-people-and-policy': {
+    colors: HLL_PALETTE,
+    usage: 'HLL People and Policy page',
+  },
+  'hll-ontology': {
+    colors: HLL_PALETTE,
+    usage: 'HLL Ontology page',
+  },
+  'hll-ai': {
+    colors: HLL_PALETTE,
+    usage: 'HLL AI page',
   },
 };
 
