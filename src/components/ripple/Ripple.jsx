@@ -124,7 +124,7 @@ function sketch(p, getPalette, getParams) {
   };
 }
 
-export default function Ripple({ variant = 'enterprise', palette, className, style }) {
+export default function Ripple({ variant = 'hll-application', palette, className, style }) {
   const hostRef = useRef(null);
   const resolvePalette = () =>
     palette && palette.length >= 2 ? buildPalette(palette) : resolveVariantPalette(variant);

@@ -16,9 +16,6 @@ import { cva } from 'class-variance-authority';
 export const rippleVariants = cva('ripple', {
   variants: {
     variant: {
-      enterprise: 'ripple--enterprise',
-      services: 'ripple--services',
-      industries: 'ripple--industries',
       'hll-application': 'ripple--hll-application',
       'hll-foundation': 'ripple--hll-foundation',
       'hll-trust-and-governance': 'ripple--hll-trust-and-governance',
@@ -28,32 +25,13 @@ export const rippleVariants = cva('ripple', {
     },
   },
   defaultVariants: {
-    variant: 'enterprise',
+    variant: 'hll-application',
   },
 });
 
-/*
- * Same gradients as VARIANT_GRADIENTS in hll-button/hll-button-variants.js —
- * kept as a literal copy (not a shared import) so this folder stays
- * self-contained and can be copied into another project on its own, per the
- * button's own README convention. If the button's gradients change, update
- * this map to match.
- */
 const HLL_PALETTE = ['#00c7d1', '#299eeb', '#fbcc4d', '#fc8a9e', '#ff5ba3', '#ffc76b'];
 
 export const VARIANT_GRADIENTS = {
-  enterprise: {
-    colors: ['#10b981', '#3b82f6'],
-    usage: 'Enterprise page/navigation',
-  },
-  services: {
-    colors: ['#ff80ca', '#8786e6', '#007fd2'],
-    usage: 'Services page/navigation',
-  },
-  industries: {
-    colors: ['#fa4288', '#ff836b', '#fee253'],
-    usage: 'Industries page/navigation',
-  },
   // The HLL service pages all share this same 6-stop palette (only the
   // ripple/gradient params in ripple-definition.js's VARIANT_PARAMS differ
   // between them) — listed as all 6 stops rather than 2-3 so buildPalette
@@ -124,6 +102,6 @@ export function buildPalette(hexColors, stops = 6) {
 }
 
 export function resolveVariantPalette(variant, stops = 6) {
-  const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS.enterprise;
+  const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS['hll-application'];
   return buildPalette(gradient.colors, stops);
 }

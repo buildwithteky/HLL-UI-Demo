@@ -30,9 +30,8 @@ export default function App() {
       </div> */}
 
       {/* Ripple / CornerRipple */}
-      {/* <Ripple variant="industries" /> */}
-      {/* <Ripple variant="industries" /> */}
-      {/* <CornerRipple variant="industries" /> */}
+      {/* <Ripple variant="hll-ai" /> */}
+      {/* <CornerRipple variant="hll-ai" /> */}
 
       {/* Tags */}
       {/* <Tag variant="warm">Warm</Tag>

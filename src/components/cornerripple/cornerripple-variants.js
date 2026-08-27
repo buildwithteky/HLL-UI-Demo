@@ -9,9 +9,6 @@ import { cva } from 'class-variance-authority';
 export const cornerRippleVariants = cva('corner-ripple', {
   variants: {
     variant: {
-      enterprise: 'corner-ripple--enterprise',
-      services: 'corner-ripple--services',
-      industries: 'corner-ripple--industries',
       'hll-application': 'corner-ripple--hll-application',
       'hll-foundation': 'corner-ripple--hll-foundation',
       'hll-trust-and-governance': 'corner-ripple--hll-trust-and-governance',
@@ -21,30 +18,13 @@ export const cornerRippleVariants = cva('corner-ripple', {
     },
   },
   defaultVariants: {
-    variant: 'enterprise',
+    variant: 'hll-application',
   },
 });
 
-/*
- * Same gradients as VARIANT_GRADIENTS in hll-button/hll-button-variants.js
- * (and ripple/ripple-variants.js) — kept as a literal copy so this folder
- * stays self-contained and can be copied into another project on its own.
- */
 const HLL_PALETTE = ['#00c7d1', '#299eeb', '#fbcc4d', '#fc8a9e', '#ff5ba3', '#ffc76b'];
 
 export const VARIANT_GRADIENTS = {
-  enterprise: {
-    colors: ['#10b981', '#3b82f6'],
-    usage: 'Enterprise page/navigation',
-  },
-  services: {
-    colors: ['#ff80ca', '#8786e6', '#007fd2'],
-    usage: 'Services page/navigation',
-  },
-  industries: {
-    colors: ['#fa4288', '#ff836b', '#fee253'],
-    usage: 'Industries page/navigation',
-  },
   // The HLL service pages all share this same 6-stop palette (only the
   // ripple/gradient params in cornerripple-definition.js's VARIANT_PARAMS
   // differ between them) — listed as all 6 stops rather than 2-3 so
@@ -114,6 +94,6 @@ export function buildPalette(hexColors, stops = 6) {
 }
 
 export function resolveVariantPalette(variant, stops = 6) {
-  const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS.enterprise;
+  const gradient = VARIANT_GRADIENTS[variant] || VARIANT_GRADIENTS['hll-application'];
   return buildPalette(gradient.colors, stops);
 }
