@@ -17,9 +17,18 @@ import { MAX_RIPPLES, TAP_RIPPLE_MODE, resolveVariantParams } from './cornerripp
 import { cornerRippleVariants, resolveVariantPalette, buildPalette } from './cornerripple-variants.js';
 import './corner-ripple.css';
 
+// Render at reduced resolution and let CSS scale the canvas up: the output is
+// a soft blurred gradient, so little detail is lost, and fragment cost drops
+// ~4x (far more on hi-DPI screens, where p5 defaults to devicePixelRatio).
+const RENDER_SCALE = 0.5;
+const TARGET_FPS = 30;
+
 function sketch(p, getPalette, getParams) {
   let shaderProgram;
   let ripplePoints = [];
+  const rippleArray = new Array(MAX_RIPPLES * 2); // reused every frame
+  let paletteSrc = null;
+  let paletteFlat = null;
 
   function getSpacedRipplePoints(spacing) {
     if (ripplePoints.length === 0) return [];
@@ -42,7 +51,9 @@ function sketch(p, getPalette, getParams) {
   }
 
   p.setup = () => {
+    p.pixelDensity(RENDER_SCALE);
     p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+    p.frameRate(TARGET_FPS);
     p.noStroke();
     shaderProgram = p.createShader(vertSrc, fragSrc);
   };
@@ -54,14 +65,10 @@ function sketch(p, getPalette, getParams) {
     const params = getParams();
     const spacedPoints = getSpacedRipplePoints(params.rippleSpacing);
 
-    const rippleArray = [];
-    for (let i = 0; i < MAX_RIPPLES; i++) {
-      if (i < spacedPoints.length) {
-        rippleArray.push(spacedPoints[i].x, spacedPoints[i].y);
-      } else {
-        rippleArray.push(-10);
-        rippleArray.push(-10);
-      }
+    rippleArray.fill(-10);
+    for (let i = 0; i < spacedPoints.length && i < MAX_RIPPLES; i++) {
+      rippleArray[i * 2] = spacedPoints[i].x;
+      rippleArray[i * 2 + 1] = spacedPoints[i].y;
     }
 
     shaderProgram.setUniform('uTapRippleMode', TAP_RIPPLE_MODE);
@@ -91,7 +98,12 @@ function sketch(p, getPalette, getParams) {
     shaderProgram.setUniform('uVibrancy', params.vibrancy);
     shaderProgram.setUniform('uContrast', params.contrast);
 
-    shaderProgram.setUniform('uPalette', getPalette().flat());
+    const palette = getPalette();
+    if (palette !== paletteSrc) {
+      paletteSrc = palette;
+      paletteFlat = palette.flat();
+    }
+    shaderProgram.setUniform('uPalette', paletteFlat);
     shaderProgram.setUniform('uUseCustomPalette', true);
 
     p.rect(-p.width / 2, -p.height / 2, p.width, p.height);
@@ -131,7 +143,16 @@ export default function CornerRipple({ variant = 'hll-application', palette, cla
       (p) => sketch(p, () => paletteRef.current, () => paramsRef.current),
       hostRef.current
     );
-    return () => instance.remove();
+    // Stop drawing while the effect isn't visible on screen.
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) instance.loop();
+      else instance.noLoop();
+    });
+    observer.observe(hostRef.current);
+    return () => {
+      observer.disconnect();
+      instance.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

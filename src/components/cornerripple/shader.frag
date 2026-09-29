@@ -171,12 +171,6 @@ void main() {
 
     vec2 uv = vTexCoord;
     
-    float paint =
-    texture2D(
-        uPaintTexture,
-        uv
-    ).r;
-    
     float t = uTime * 0.9;
 
     float aspect = uResolution.x / uResolution.y;
@@ -406,41 +400,29 @@ vec2 shapedSP =
     vec3 col = vec3(0.0);
     float total = 0.0;
 
-    for (int i = -20; i <= 20; i++) {
+    // Loop-invariant terms hoisted out of the tap loop; 21 taps (was 41) —
+    // the taps blur a smooth gradient, so the result is visually the same.
+    float safeRadius = max(radius, 0.08);
+    float lenSP = length(shapedSP);
+    float angularFade = smoothstep(0.03, 0.22, radius);
+    vec2 radialDir = (shapedSP / safeRadius) * angularFade;
+    vec2 tangentDir =
+        (lenSP > 1e-5)
+        ? (vec2(-shapedSP.y, shapedSP.x) / lenSP) * angularFade
+        : vec2(0.0);
+    float swirlBase = 0.01 * sin(radius * 20.0 + t);
+    vec2 invShape = 1.0 / shapeScale;
 
-        float f = float(i) / 20.0;
+    for (int i = -10; i <= 10; i++) {
 
-        float safeRadius =
-            max(radius, 0.08);
-
-        vec2 radialDir =
-            shapedSP / safeRadius;
-
-        float lenSP =
-            length(shapedSP);
-
-        vec2 tangentDir =
-            (lenSP > 1e-5)
-            ? vec2(-shapedSP.y, shapedSP.x) / lenSP
-            : vec2(0.0);
-
-        float angularFade =
-            smoothstep(
-                0.03,
-                0.22,
-                radius
-            );
-
-        tangentDir *= angularFade;
-        radialDir *= angularFade;
+        float f = float(i) / 10.0;
 
         float swirl =
             f * 0.085 * rippleSoft +
             shear * f * 0.038 +
-            0.01 * sin(radius * 20.0 + t);
+            swirlBase;
 
-        float radialOffset =
-            f * 0.05 * shear;
+        float radialOffset = f * 0.05 * shear;
 
         vec2 warped =
             shapedSP +
@@ -448,7 +430,7 @@ vec2 shapedSP =
             radialDir * radialOffset * 0.6;
 
         warped *= 0.9;
-        warped /= shapeScale;
+        warped *= invShape;
 
         vec2 sampleUV =
             fromAspectSpace(
@@ -456,17 +438,12 @@ vec2 shapedSP =
                 aspect
             );
 
-        sampleUV =
-            stabilizeUV(sampleUV);
+        sampleUV = stabilizeUV(sampleUV);
 
-        float w =
-            pow(
-                1.0 - abs(f),
-                2.0
-            );
+        float a = 1.0 - abs(f);
+        float w = a * a;
 
-        col +=
-            meshGradient(sampleUV) * w;
+        col += meshGradient(sampleUV) * w;
 
         total += w;
     }
