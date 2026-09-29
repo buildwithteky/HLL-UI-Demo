@@ -79,14 +79,14 @@ export default function App() {
       </div> */}
 
       {/* Ripple / CornerRipple */}
-      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <Ripple variant="hll-ai" />
-        <Ripple variant="hll-trust-and-governance" />
+        {/* <Ripple variant="hll-trust-and-governance" />
         <Ripple variant="hll-foundation" />
         <Ripple variant="hll-ontology" />
         <Ripple variant="hll-people-and-policy" />
-        <Ripple variant="hll-application" />
-      </div> */}
+        <Ripple variant="hll-application" /> */}
+      </div>
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <CornerRipple variant="hll-ai" />
         <CornerRipple variant="hll-trust-and-governance" />
@@ -141,7 +141,7 @@ export default function App() {
           Fixed fullscreen (shader.css's `.shader`, inset: 0), so only one
           fullscreen usage (this or the plain Shader list above) should be
           mounted at a time. See shader/MenuTriggerOverlay.jsx. */}
-      <MenuTriggerOverlay variant="services" />
+      {/* <MenuTriggerOverlay variant="services" /> */}
     </>
   );
 }
