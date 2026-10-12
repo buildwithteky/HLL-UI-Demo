@@ -1,0 +1,27 @@
+/* port-turnaround.css — layout glue only. Type values are the design-system
+   Typography styles verbatim (Paragraph 20px/125%, Title 36px, Section
+   Heading 12px uppercase 25% tracking, Functional UI Text Sometype Mono
+   12px uppercase); colors are the design-system Dark Grey / Mid Grey.
+   Component looks (buttons, tags, headings) come only from the components. */
+.pt-page { width: 100%; min-height: 100vh; color: #1A1A1A; background: #fff;
+  font-family: 'Aeonik Light', sans-serif; display: flex; flex-direction: column; align-self: stretch; }
+.pt-header, .pt-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; }
+.pt-nav { display: flex; gap: 8px; }
+.pt-mono { font-family: 'Sometype Mono', monospace; font-size: 12px; text-transform: uppercase; }
+.pt-navbtn { background: none; border: 0; cursor: pointer; padding: 4px 8px; color: #949494; }
+.pt-navbtn.is-current { color: #1A1A1A; }
+.pt-main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 16px; box-sizing: border-box; }
+.pt-slide { display: flex; flex-direction: column; gap: 24px; }
+.pt-h1, .pt-card h3 { margin: 0; }
+.pt-title { margin: 0; font-size: 36px; font-weight: 400; line-height: 1.25; }
+.pt-title em { font-style: normal; }
+.pt-para { margin: 0; font-size: 20px; line-height: 1.25; }
+.pt-eyebrow { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.25em; }
+.pt-muted { margin: 0; color: #949494; }
+.pt-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); }
+.pt-stages li { display: flex; flex-direction: column; gap: 4px; }
+.pt-rowlabels, .pt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.pt-stack { display: flex; flex-direction: column; gap: 24px; }
+.pt-card { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.pt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.pt-steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 8px; font-size: 20px; }

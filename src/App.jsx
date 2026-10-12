@@ -8,6 +8,7 @@ import { OurPromise } from './components/our-promise';
 import { Tag } from './components/tag';
 import { Shader, MenuTriggerOverlay } from './components/shader';
 import { BottomShader } from './components/bottom-shader';
+import PortTurnaround from './pages/port-turnaround';
 import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.jsx';
 
 // This demonstrates the actual reusable components — same imports a
@@ -19,6 +20,8 @@ import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.js
 // contact) plus the six per-service gradients (hll-ai/hll-trust/
 // hll-foundation/hll-ontology/hll-people/hll-application).
 export default function App() {
+  // Hash route: #/port-turnaround renders the page; anything else keeps the demo harness.
+  if (window.location.hash === '#/port-turnaround') return <PortTurnaround />;
   return (
     <>
       {/* Buttons */}
@@ -79,14 +82,14 @@ export default function App() {
       </div> */}
 
       {/* Ripple / CornerRipple */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <Ripple variant="hll-ai" />
-        {/* <Ripple variant="hll-trust-and-governance" />
+        <Ripple variant="hll-trust-and-governance" />
         <Ripple variant="hll-foundation" />
         <Ripple variant="hll-ontology" />
         <Ripple variant="hll-people-and-policy" />
-        <Ripple variant="hll-application" /> */}
-      </div>
+        <Ripple variant="hll-application" />
+      </div> */}
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <CornerRipple variant="hll-ai" />
         <CornerRipple variant="hll-trust-and-governance" />
