@@ -53,6 +53,51 @@ the same recipe to any sibling component (`Shader`, `BottomShader`,
 too — keep the color entries byte-identical across components per
 [[design-system]]'s note on the shared 11-variant system.
 
+## Reuse-only page building
+
+Detailed procedure behind `SKILL.md`'s "Reuse-only rule". Applies to every
+page, section, or layout built or modified in this repo.
+
+**1. Discover.** Read `package.json` (its dependencies are the only
+libraries allowed), the `src/` tree, `main.jsx`/`App.jsx` (canonical usage
+and how things are mounted), `index.css` (fonts, tokens, globals), and each
+component folder's README/`*-definition.js`/`*-variants.js` comments.
+
+**2. Inventory.** From the real source of each candidate component, note:
+import path (folder barrel `index.js`), purpose, props and `children`,
+allowed `variant` values, behavior (canvas/WebGL/p5, refs, cleanup), layout
+contract (sizing, absolute/fixed positioning, needs a positioned parent or
+explicit height), styling files, and performance limits (e.g. avoid many
+GPU-heavy shader components mounted at once). Show the user a compact
+version before building if the page is non-trivial.
+
+**3. Map and compose.** Match each page element to an existing component and
+the semantically right variant. If nothing fits one-to-one, compose
+(nesting, wrappers, different props/variants). Use plain semantic HTML with
+existing classes/tokens only as layout glue. List elements with no match as
+gaps; do not fill them silently.
+
+**4. Implement.** Follow neighbor conventions (file/folder naming, barrel
+imports, JSX style, comment density). Copy how `App.jsx` wires components.
+Use existing tokens/variants, never hard-coded colors, fonts, or spacing.
+Register the page with the smallest possible change to existing files.
+Don't edit shared components or `*-definition.js` for one page's needs.
+
+**5. New component gate.** Allowed only if all hold: no component, variant,
+or composition can satisfy the need (name what you checked); the need is
+reusable, not a one-off tweak; the user is told (ask if unsure). Then it must
+use the folder structure above, be built from existing components/tokens,
+follow the one-implementation-many-`variant`s convention, add no dependency,
+and be called out in your summary. A new `variant` entry (recipe above) is
+preferred over a new component, but its color must be source-backed per
+[[design-system]].
+
+**6. Verify.** `package.json` unchanged; no duplicate components; imports
+resolve; `npm run build` passes (and dev server renders without console
+errors when feasible); diff limited to the page, its wiring, and any
+approved new component. Finish with: files changed, components + variants
+used, gaps/new components (or "None"), assumptions.
+
 ## The two effect-wrapping patterns
 
 **1. WebGL2 canvas + factory runtime** — used by `HLLButton`,

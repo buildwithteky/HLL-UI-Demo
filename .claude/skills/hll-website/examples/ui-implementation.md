@@ -26,9 +26,10 @@ metadata:
    node id) rather than guessing a layout — this skill's [[known-gaps]]
    notes that most page copy wasn't deep-read during the initial analysis
    pass, so a fresh pull is needed for pixel-accurate work.
-4. Follow [[implementation-patterns]]'s wrapping conventions if any new
-   sub-component is genuinely needed (unlikely — prefer composing existing
-   primitives), and pull exact colors/type from [[design-system]] instead
+4. Apply [[implementation-patterns]]'s "Reuse-only page building": read the
+   actual component source and `App.jsx` usage first, compose existing
+   primitives, add no dependency. Only if the new-component gate there is
+   met (unlikely), follow its wrapping conventions, and pull exact colors/type from [[design-system]] instead
    of eyeballing the screenshot.
 5. If the layout needs a variant not yet defined anywhere (e.g. an
    industry-specific accent), flag it per [[known-gaps]]'s "No React

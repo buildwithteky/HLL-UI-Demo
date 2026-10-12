@@ -89,16 +89,43 @@ Match the deliverable to the references it actually needs:
 5. If asked about something not covered by any reference (e.g. a business rule, a metric, a launch date), respond with `Not specified in the provided project sources.` rather than guessing.
 
 **"Implement / build / modify the X page or component"**
+0. Inspect the repo per the "Reuse-only rule" below before designing anything.
 1. Look up X in [[figma-to-code]] to find its Figma frame and, if it exists, its React counterpart.
 2. If a React component already covers it, reuse it — add a `variant` entry rather than a new component (see [[implementation-patterns]]'s "adding a variant" recipe, e.g. `hll-button/README.md`'s own walkthrough).
 3. Pull exact colors/typography from [[design-system]] — never invent a hex value or font size.
 4. Follow the existing wrapper pattern for the effect type (WebGL2 canvas via `*-runtime.js`, or p5.js instance-mode via `?raw` shader imports) — see [[implementation-patterns]].
 5. If X is a Figma page with no React implementation yet (most pages — see [[known-gaps]]), say so explicitly and propose which existing components it would assemble from, rather than fabricating a new page-level component.
 
+## Reuse-only rule for pages and UI
+
+Any page, section, or layout you build or modify must be **composed from
+what already exists in the current repo**: its components, variants, design
+tokens/CSS, layouts, and composition patterns (usually `src/components/**`
+and the usage in `src/App.jsx`).
+
+1. **Inspect first.** Before writing code, read the real source of the
+   components you may use (props, variants, layout/sizing needs, perf
+   limits) and check `package.json` for what is already a dependency. The
+   repo is the truth; [[component-library]] may be stale.
+2. **Reuse, then compose.** Map each element to an existing component and
+   variant; if none fits one-to-one, nest/combine existing ones.
+3. **Never** duplicate an existing component, add an external UI/icon/
+   animation library, or hard-code colors/fonts/spacing that variants or
+   tokens already provide.
+4. **New component = last resort**: only when no component, variant, or
+   composition can do it, the need is reusable, and you tell the user (ask
+   if unsure). Build it in the sibling folder structure from existing
+   pieces, with no new dependency. Adding a `variant` entry via the
+   documented recipe is preferred over a new component.
+
+Full procedure, new-component gate, and checklist: [[implementation-patterns]]
+("Reuse-only page building").
+
 ## Anti-patterns — do not do these
 
 - Do not invent product features, pages, business rules, or user flows beyond what Figma, its annotations, or the React code actually show.
 - Do not create a new component for a new page/variant when an existing component's `variant` system already covers it — this violates the project's explicit "one implementation, many variants" convention (see every component README's "Adding a New Variant" section).
+- Do not add external component/UI/icon/animation libraries or duplicate an existing component's behavior under a new name — compose what the repo already has (see "Reuse-only rule" above).
 - Do not invent colors, gradient stops, font sizes, or spacing — use only values from [[design-system]] (sourced from `*-definition.js`/`*-variants.js` and the Figma "Typography styles"/"Industry Colours" reference frames).
 - Do not treat the placeholder/draft copy visible in Figma (e.g. unfinished headline prompts) as final, approved product copy — flag it as draft where relevant.
 - Do not silently resolve the known naming mismatches between components (e.g. `ripple`'s `hll-trust-and-governance` vs. `hll-button`'s `hll-trust`) — surface them, see [[known-gaps]].
