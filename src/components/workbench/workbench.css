@@ -1,0 +1,6 @@
+/* Host layout for the workbench: a full-viewport layer above the page. */
+.wbx { position: fixed; inset: 0; z-index: 1000; }
+.wbx-inner { position: absolute; inset: 0; }
+.wbx .wb { padding-top: 0; }
+/* Time/lens controls are now library buttons; the old pill container is just a row. */
+.wbx .seg { border: 0; background: none; overflow: visible; gap: 6px; align-items: center; }

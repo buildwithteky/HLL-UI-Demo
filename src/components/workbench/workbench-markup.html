@@ -1,0 +1,96 @@
+<div class="wb on" id="wb" aria-label="Vessel Turnaround Workbench">
+    <div class="boot" id="boot"><div class="boot-in"><div class="sec">Bayan Container Terminal</div><div class="boot-t">Connecting sources</div><ul id="bootList"></ul><div class="ui" style="color:var(--text-3);margin-top:10px">Synthetic terminal. Real architecture.</div></div></div>
+    <div class="wb-hd">
+      <span class="ttl">Bayan Container Terminal</span>
+      <span class="live" id="liveBadge"><span class="dot"></span><span id="liveTxt">Live</span></span>
+      <span class="clock" id="clock">14:20</span>
+      <div class="seg" id="timeSeg" aria-label="Time controls">
+      </div>
+      <div class="seg" id="lensSeg" aria-label="Lenses">
+      </div>
+      <span class="spacer"></span>
+      <span class="synth">Synthetic</span>
+      <span data-slot="reset"></span>
+      <span data-slot="close"></span>
+    </div>
+    <div class="mob-strip" id="mobStrip"></div>
+
+    <aside class="feed" aria-label="Live event feed">
+      <div class="hd">Live events</div>
+      <ul id="feedList"></ul>
+    </aside>
+
+    <div class="map" id="mapWrap">
+      <canvas id="mapCanvas"></canvas>
+      <div class="overlay">
+        <div class="map-legend" id="legend"></div>
+        <div class="callout-map" id="callout"><div id="calloutTxt"></div><button id="calloutBtn">Follow this ship</button></div>
+        <div class="map-note">Synthetic terminal. Not a real port. Waiting area is the anchorage, where ships hold before a berth is free.</div>
+        <button class="resume" id="resumeBtn">Resume guided walk</button>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="close-line" id="closeLine">Everything you just clicked is synthetic and says so. The real version runs on the events a port already records. <b>What would this need to show, on real port events, to be worth an hour with your team?</b><button id="closeLineBtn">Dismiss</button></div>
+    </div>
+
+    <aside class="inst" id="inst" aria-label="Live instruments"></aside>
+
+    <div class="tl" aria-label="Berth schedule, next 24 hours"><div class="hd">Berth schedule, next 24 hours</div><canvas id="tlCanvas"></canvas></div>
+
+    <!-- Graph panel -->
+    <div class="panel" id="graphPanel" aria-label="The port graph">
+      <div class="ph"><span class="t">The port graph</span><button data-close="graphPanel">Close</button></div>
+      <div class="pb">
+        <p class="sub">One connected picture of the port call. Select anything here and it lights on the map; select anything on the map and it lights here. Same records, same colors.</p>
+        <div class="graph-wrap"><canvas id="graphCanvas"></canvas></div>
+        <div class="sec" style="margin-bottom:6px">Sources streaming in</div>
+        <div class="sources" id="sources"></div>
+        <div id="erBox"></div>
+        <div id="graphRecord"></div>
+      </div>
+    </div>
+
+    <!-- Hours drawer -->
+    <div class="hours" id="hoursPanel" aria-label="Where the hours go">
+      <div class="ph"><span class="t">Where the hours go, ship by ship</span><button data-close="hoursPanel">Close</button></div>
+      <div class="pb">
+        <div class="stg-legend legend" id="stgLegend"></div>
+        <div id="hrows"></div>
+        <div class="hcause" id="hcause">Select a segment to see the cause in the records and light that zone on the map.</div>
+      </div>
+    </div>
+
+    <!-- Assistant panel -->
+    <div class="panel" id="agentPanel" aria-label="The governed assistant">
+      <div class="ph"><span class="t">Conflicts and assistants</span><button data-close="agentPanel">Close</button></div>
+      <div class="pb">
+        <p class="sub" id="agentIntro">Assistants watch the connected picture. Each one covers a part of the port call, opens a case when a conflict forms, walks the records, drafts the fix, and waits for a person to sign.</p>
+        <div class="qhd"><span class="sec">Open cases</span><span class="ui" id="qCount" style="color:var(--text-3)"></span></div>
+        <div class="queue" id="queue"></div>
+        <div class="qhd" style="margin-top:14px"><span class="sec" id="caseTitle">Select a case</span><span class="ui" id="caseAssistant" style="color:var(--text-3)"></span></div>
+        <div class="steps" id="steps"></div>
+        <div class="plan" id="plan"></div>
+        <div class="sign" id="sign">
+          <label class="ui" for="signer" style="color:var(--text-3)">Signing as</label>
+          <input id="signer" value="Duty manager" aria-label="Name of the person signing">
+          <textarea id="reason" placeholder="Reason for overruling (required)" aria-label="Reason for overruling"></textarea>
+          <div class="row">
+            <span data-slot="approve"></span>
+            <span data-slot="overrule"></span>
+            <span data-slot="confirm"></span>
+          </div>
+        </div>
+        <div class="logline" id="logline"></div>
+        <div class="logline" id="agentClose" style="border-left-color:var(--ent-berth)">Everything you just clicked is synthetic and says so. The real version runs on the events a port already records. <b>What would this need to show, on real port events, to be worth an hour with your team?</b></div>
+        <div class="seam">The assistant works the seams between the systems. The systems themselves stay in charge of their own stages.</div>
+      </div>
+    </div>
+
+    <!-- Record pane (map selection) -->
+    <div class="panel" id="recordPanel" aria-label="Record">
+      <div class="ph"><span class="t" id="recordTitle">Record</span><button data-close="recordPanel">Close</button></div>
+      <div class="pb" id="recordBody"></div>
+    </div>
+  </div>
+</section>
+
+</main>
