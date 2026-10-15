@@ -1,7 +1,9 @@
 // PortTurnaround.jsx — "Ship turnaround, in three slides" (Hyper Lychee Labs).
-// Page assembled only from existing components: Ripple (backdrop),
-// GradientRevealTextNormal (slide headings), Tag (named stack), HLLButton /
-// HLLOutlineButton (navigation + CTA). Layout glue lives in port-turnaround.css.
+// Page assembled only from existing components: GradientRevealTextNormal
+// (slide headings), Tag (named stack), HLLButton / HLLOutlineButton (slide
+// controls + CTA). Layout follows the Figma site frames (1512px frame, 30px
+// gutter, nav, hairline label/body rows, CTA band, footer); that layout glue
+// lives in port-turnaround.css.
 import { useCallback, useEffect, useState } from 'react';
 import { GradientRevealTextNormal } from '../../components/heading-anim-normal';
 import { HLLButton } from '../../components/hll-button';
@@ -74,57 +76,93 @@ const BUILD_STEPS = [
 ];
 const STACK = ['LinkML', 'Splink', 'Neo4j', 'LangGraph'];
 
+
+// Top-nav labels and footer columns as they appear in the Figma frames
+// (nav items = the five menu-item variants; service list is the Services
+// menu's draft sub-links, minus its duplicated "HLL Foundation" — see
+// known-gaps). Plain text: no routes for these exist in this repo.
+const NAV = ['Services', 'Industries', 'Engagement', 'About', 'Contact'];
+const FOOTER_SITE = ['Home', 'About', 'Team', 'Engagement', 'Contact'];
+const FOOTER_SERVICES = ['HLL Kinetic', 'HLL Momentum', 'HLL Governance & Trust', 'HLL Foundation', 'HLL Motion'];
+
+// Figma "section row": an empty lead column, a label column, and a body
+// column, under a 1px hairline (measured 606 / 250 / ~596 of the 1452 content width).
+function Row({ label, children }) {
+  return (
+    <section className="pt-row">
+      <p className="pt-label">{label}</p>
+      <div className="pt-body">{children}</div>
+    </section>
+  );
+}
+
+// Section heading block: breadcrumb-style label, 64px heading, optional lead.
+function Heading({ label, text, variant, children }) {
+  return (
+    <header className="pt-heading">
+      <p className="pt-label pt-label--crumb">{label}</p>
+      <h1 className="pt-h1">
+        <GradientRevealTextNormal text={text} variant={variant} fontSize="64px" />
+      </h1>
+      {children}
+    </header>
+  );
+}
+
 function Slide1() {
   return (
     <section className="pt-slide">
-      <p className="pt-eyebrow">Ports and shipping logistics</p>
-      <h1 className="pt-h1">
-        <GradientRevealTextNormal
-          text="How do you make the turnaround timing for the ship much faster?"
-          variant="hll-ai"
-          fontSize="64px"
-        />
-      </h1>
-      <p className="pt-title">
-        Our answer: <em>the delay hides in the handoffs.</em>
-      </p>
-      <p className="pt-muted">You asked us this at the booth. Three slides, and the third one runs.</p>
+      <Heading
+        label="Ports and shipping logistics"
+        text="How do you make the turnaround timing for the ship much faster?"
+        variant="hll-ai"
+      >
+        <p className="pt-title">
+          Our answer: <em>the delay hides in the handoffs.</em>
+        </p>
+        <p className="pt-muted">You asked us this at the booth. Three slides, and the third one runs.</p>
+      </Heading>
 
-      <ol className="pt-stages">
-        {STAGES.map((s, i) => (
-          <li key={s}>
-            <span className="pt-mono">{String(i + 1).padStart(2, '0')}</span>
-            <span>{s}</span>
-          </li>
-        ))}
-      </ol>
-      <ul className="pt-rowlabels">
-        {STAGE_ROWS.map((r) => (
-          <li key={r} className="pt-mono">{r}</li>
-        ))}
-      </ul>
+      <Row label="One port call">
+        <ol className="pt-stages">
+          {STAGES.map((s, i) => (
+            <li key={s}>
+              <span className="pt-mono pt-muted">{String(i + 1).padStart(2, '0')}/{String(STAGES.length).padStart(2, '0')}</span>
+              <span>{s}</span>
+            </li>
+          ))}
+        </ol>
+        <ul className="pt-rowlabels">
+          {STAGE_ROWS.map((r) => (
+            <li key={r} className="pt-mono pt-muted">{r}</li>
+          ))}
+        </ul>
+      </Row>
 
-      <p className="pt-para">
-        Five parties run a port call on five systems. They coordinate by phone, email, and radio. Each system sees its
-        own stage.
-      </p>
-      <p className="pt-title">Nothing sees the ship's whole stay.</p>
-      <p className="pt-para">So the delay shows up one handoff too late.</p>
-      <p className="pt-para">
-        Saudi ports moved about 8.3 million standard container units in 2025; the national target is 40 million a year
-        by 2030. That growth arrives through the same berths, so the capacity has to come out of the hours inside each
-        port call.
-      </p>
-      <p className="pt-muted pt-mono">
-        Sources: Saudi Ports Authority published figures, 2025. National Transport and Logistics Strategy.
-      </p>
+      <Row label="The problem">
+        <p className="pt-para">
+          Five parties run a port call on five systems. They coordinate by phone, email, and radio. Each system sees
+          its own stage.
+        </p>
+        <p className="pt-title">Nothing sees the ship's whole stay.</p>
+        <p className="pt-para">So the delay shows up one handoff too late.</p>
+        <p className="pt-para">
+          Saudi ports moved about 8.3 million standard container units in 2025; the national target is 40 million a
+          year by 2030. That growth arrives through the same berths, so the capacity has to come out of the hours
+          inside each port call.
+        </p>
+        <p className="pt-muted pt-mono">
+          Sources: Saudi Ports Authority published figures, 2025. National Transport and Logistics Strategy.
+        </p>
+      </Row>
 
-      <p className="pt-eyebrow">Who we are and where we sit</p>
-      <h2 className="pt-title">We build the layer that sits exactly here.</h2>
-      <p className="pt-para">
-        Above the systems a port already runs. Before the decisions its people make. You asked how we mix the AI with
-        the analytics itself: we build the analytics first, then put the AI to work on it, and a person signs.
-      </p>
+      <Row label="Who we are and where we sit">
+        <h2 className="pt-title">We build the layer that sits exactly here.</h2>
+        <p className="pt-para">
+          Above the systems a port already runs. Before the decisions its people make. You asked how we mix the AI
+          with the analytics itself: we build the analytics first, then put the AI to work on it, and a person signs.
+        </p>
+      </Row>
     </section>
   );
 }
@@ -132,84 +170,76 @@ function Slide1() {
 function Slide2() {
   return (
     <section className="pt-slide">
-      <p className="pt-eyebrow">The approach</p>
-      <h1 className="pt-h1">
-        <GradientRevealTextNormal
-          text="The layer Hyper Lychee Labs builds and runs"
-          variant="hll-ontology"
-          fontSize="64px"
-        />
-      </h1>
-      <p className="pt-muted">Open source. On infrastructure you own.</p>
+      <Heading label="The approach" text="The layer Hyper Lychee Labs builds and runs" variant="hll-ontology">
+        <p className="pt-muted">Open source. On infrastructure you own.</p>
+      </Heading>
 
-      <div className="pt-stack">
-        <div className="pt-card">
-          <p className="pt-eyebrow">Your people and operations</p>
-          <ul className="pt-list">
-            {PEOPLE.map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
+      <Row label="Your people and operations">
+        <ul className="pt-list">
+          {PEOPLE.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </Row>
+
+      {LAYERS.map((l, n) => (
+        <Row key={l.name} label={`${String(n + 1).padStart(2, '0')}/${String(LAYERS.length).padStart(2, '0')}`}>
+          <h3 className="pt-title">{l.name}</h3>
+          <p className="pt-para">{l.body}</p>
+          <p className="pt-muted pt-mono">{l.tech}</p>
+        </Row>
+      ))}
+
+      <Row label="Your systems, read in place">
+        <ul className="pt-list">
+          {SYSTEMS.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+        <p className="pt-para">
+          The workbench on the next slide is this layer made visible: one command center where structured and
+          unstructured data, analytics, and governed agentic workflows meet, built for a duty manager to run a
+          shorter port call.
+        </p>
+      </Row>
+
+      <Row label="How this gets built">
+        <p className="pt-para">
+          Synthetic data, real architecture. The demo runs invented numbers through the same components we deploy.
+        </p>
+        <p className="pt-title">The first proof arrives in weeks.</p>
+        <ol className="pt-steps">
+          {BUILD_STEPS.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ol>
+        <p className="pt-label">Named stack</p>
+        <div className="pt-chips">
+          {STACK.map((s) => (
+            <Tag key={s} variant="cool" removable={false}>{s}</Tag>
+          ))}
         </div>
+      </Row>
 
-        {LAYERS.map((l) => (
-          <div className="pt-card" key={l.name}>
-            <h3 className="pt-title">{l.name}</h3>
-            <p className="pt-para">{l.body}</p>
-            <p className="pt-muted pt-mono">{l.tech}</p>
-          </div>
-        ))}
+      <Row label="It might look like one more dashboard">
+        <p className="pt-para">
+          Dashboards already describe the day well. The missing piece is the drafted next action, reasoning on
+          screen, waiting for a person to sign.
+        </p>
+      </Row>
 
-        <div className="pt-card">
-          <p className="pt-eyebrow">Your systems, read in place</p>
-          <ul className="pt-list">
-            {SYSTEMS.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <p className="pt-para">
-        The workbench on the next slide is this layer made visible: one command center where structured and
-        unstructured data, analytics, and governed agentic workflows meet, built for a duty manager to run a shorter
-        port call.
-      </p>
-
-      <h2 className="pt-title">How this gets built</h2>
-      <p className="pt-para">
-        Synthetic data, real architecture. The demo runs invented numbers through the same components we deploy.
-      </p>
-      <p className="pt-title">The first proof arrives in weeks.</p>
-      <ol className="pt-steps">
-        {BUILD_STEPS.map((s) => (
-          <li key={s}>{s}</li>
-        ))}
-      </ol>
-      <p className="pt-eyebrow">Named stack</p>
-      <div className="pt-chips">
-        {STACK.map((s) => (
-          <Tag key={s} variant="cool" removable={false}>{s}</Tag>
-        ))}
-      </div>
-
-      <h2 className="pt-title">It might look like one more dashboard.</h2>
-      <p className="pt-para">
-        Dashboards already describe the day well. The missing piece is the drafted next action, reasoning on screen,
-        waiting for a person to sign.
-      </p>
-
-      <h2 className="pt-title">Two honest limits</h2>
-      <p className="pt-para">
-        Grounding the AI in one governed picture reduces wrong answers and leaves fewer of them, never zero. A person
-        stays in charge of every step that matters. And the picture is only as good as the events feeding it, which
-        takes real integration work with the systems a port already runs.
-      </p>
-      <p className="pt-para">
-        We have not run a port. We build the data layer under the people who do. The shape of the problem, many
-        systems and no shared key, is the same one we work on in the region for government entities and for private
-        sector companies.
-      </p>
+      <Row label="Two honest limits">
+        <p className="pt-para">
+          Grounding the AI in one governed picture reduces wrong answers and leaves fewer of them, never zero. A
+          person stays in charge of every step that matters. And the picture is only as good as the events feeding it,
+          which takes real integration work with the systems a port already runs.
+        </p>
+        <p className="pt-para">
+          We have not run a port. We build the data layer under the people who do. The shape of the problem, many
+          systems and no shared key, is the same one we work on in the region for government entities and for private
+          sector companies.
+        </p>
+      </Row>
     </section>
   );
 }
@@ -217,26 +247,22 @@ function Slide2() {
 function Slide3({ onOpen }) {
   return (
     <section className="pt-slide">
-      <p className="pt-eyebrow">The demo</p>
-      <h1 className="pt-h1">
-        <GradientRevealTextNormal
-          text="Vessel Turnaround Workbench"
-          variant="hll-application"
-          fontSize="64px"
-        />
-      </h1>
-      <p className="pt-para">
-        A synthetic Red Sea container terminal, running live. Watch a berth conflict form across three systems, then
-        watch the assistant walk the connected picture, draft the fix, and wait. The assistant drafts. A person
-        decides and signs.
-      </p>
-      <div>
-        <HLLButton variant="hll-application" onClick={onOpen}>
-          Open the workbench
-        </HLLButton>
-      </div>
-      <p className="pt-muted pt-mono">Synthetic terminal. All data invented, modeled on public port-event standards.</p>
-
+      <Heading label="The demo" text="Vessel Turnaround Workbench" variant="hll-application" />
+      <Row label="Live demo">
+        <p className="pt-para">
+          A synthetic Red Sea container terminal, running live. Watch a berth conflict form across three systems, then
+          watch the assistant walk the connected picture, draft the fix, and wait. The assistant drafts. A person
+          decides and signs.
+        </p>
+        <div>
+          <HLLButton variant="hll-application" onClick={onOpen}>
+            Open the workbench
+          </HLLButton>
+        </div>
+        <p className="pt-muted pt-mono">
+          Synthetic terminal. All data invented, modeled on public port-event standards.
+        </p>
+      </Row>
     </section>
   );
 }
@@ -258,7 +284,7 @@ export default function PortTurnaround() {
   }, [i, go]);
 
   // The workbench replaces the page while open, so its many WebGL buttons
-  // are not competing with the page's Ripple/buttons for GPU contexts.
+  // are not competing with the page's buttons/tags for GPU contexts.
   if (wb) {
     return <Workbench key={wb} onClose={() => setWb(0)} onReset={() => setWb((n) => n + 1)} />;
   }
@@ -268,29 +294,56 @@ export default function PortTurnaround() {
     <div className="pt-page">
       <header className="pt-header">
         <span className="pt-brand">Hyper Lychee Labs</span>
-        <nav className="pt-nav" aria-label="Slides">
-          {STEPS.map((s, n) => (
-            <button
-              key={s}
-              type="button"
-              className={`pt-navbtn pt-mono${n === i ? ' is-current' : ''}`}
-              aria-current={n === i ? 'step' : undefined}
-              onClick={() => go(n)}
-            >
-              {n + 1} {s}
-            </button>
+        <ul className="pt-menu pt-label" aria-label="Site sections">
+          {NAV.map((n) => (
+            <li key={n}>{n}</li>
           ))}
-        </nav>
+        </ul>
       </header>
+
+      <nav className="pt-tabs" aria-label="Slides">
+        {STEPS.map((s, n) => (
+          <button
+            key={s}
+            type="button"
+            className={`pt-tab pt-label${n === i ? ' is-current' : ''}`}
+            aria-current={n === i ? 'step' : undefined}
+            onClick={() => go(n)}
+          >
+            {n + 1} {s}
+          </button>
+        ))}
+      </nav>
 
       <main className="pt-main">
         <Slide key={i} onOpen={() => setWb(1)} />
       </main>
 
-      <footer className="pt-footer">
+      <div className="pt-controls">
         <HLLOutlineButton variant="hll-ai" onClick={() => go(i - 1)} disabled={i === 0}>← Back</HLLOutlineButton>
         <span className="pt-muted pt-mono">Arrow keys or swipe</span>
         <HLLButton variant="hll-ai" onClick={() => go(i + 1)} disabled={i === SLIDES.length - 1}>Next →</HLLButton>
+      </div>
+
+      <section className="pt-cta">
+        <h2 className="pt-cta__title">Let’s start a conversation</h2>
+        <HLLButton variant="contact">Write to us</HLLButton>
+      </section>
+
+      <footer className="pt-footer">
+        <span className="pt-footer__brand">Hyper Lychee Labs</span>
+        <ul className="pt-footer__col pt-label">
+          {FOOTER_SITE.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+        <ul className="pt-footer__col pt-label">
+          <li className="pt-muted">Services</li>
+          {FOOTER_SERVICES.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+        <p className="pt-footer__legal pt-label">© Hyper Lychee Labs 2026</p>
       </footer>
     </div>
   );

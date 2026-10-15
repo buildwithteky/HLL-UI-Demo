@@ -2,26 +2,60 @@
    Typography styles verbatim (Paragraph 20px/125%, Title 36px, Section
    Heading 12px uppercase 25% tracking, Functional UI Text Sometype Mono
    12px uppercase); colors are the design-system Dark Grey / Mid Grey.
+   Layout values (1512px frame, 30px gutter, label/body row columns, hairline,
+   page background, 36px controls) are measured from the Figma page frames
+   (see design-specs/design-system-specifications.md).
    Component looks (buttons, tags, headings) come only from the components. */
-.pt-page { width: 100%; min-height: 100vh; color: #1A1A1A; background: #fff;
-  font-family: 'Aeonik Light', sans-serif; display: flex; flex-direction: column; align-self: stretch; }
-.pt-header, .pt-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; }
-.pt-nav { display: flex; gap: 8px; }
+.pt-page { width: 100%; max-width: 1512px; margin: 0 auto; min-height: 100vh; color: #1A1A1A; background: #fafafa;
+  font-family: 'Aeonik Regular', sans-serif; display: flex; flex-direction: column; align-self: stretch; }
 .pt-mono { font-family: 'Sometype Mono', monospace; font-size: 12px; text-transform: uppercase; }
-.pt-navbtn { background: none; border: 0; cursor: pointer; padding: 4px 8px; color: #949494; }
-.pt-navbtn.is-current { color: #1A1A1A; }
-.pt-main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 16px; box-sizing: border-box; }
-.pt-slide { display: flex; flex-direction: column; gap: 24px; }
-.pt-h1, .pt-card h3 { margin: 0; }
+.pt-label { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.25em; }
+.pt-label--crumb { font-family: 'Sometype Mono', monospace; letter-spacing: 0; color: #949494; }
+.pt-muted { margin: 0; color: #949494; }
+
+/* Nav: wordmark left, five menu labels right, 72px bar, 30px gutter */
+.pt-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 72px; padding: 0 30px; }
+.pt-brand { font-size: 18px; }
+.pt-menu { display: flex; gap: 42px; list-style: none; margin: 0; padding: 0; color: #949494; }
+
+/* Slide tabs: 38px tall, 8px gap (Figma tab row) */
+.pt-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 30px; }
+.pt-tab { height: 38px; padding: 0 22px; background: none; border: 1px solid #a1a1a1; border-radius: 4px; cursor: pointer; color: #949494; }
+.pt-tab.is-current { color: #1A1A1A; border-color: #1A1A1A; }
+
+.pt-main { flex: 1; width: 100%; box-sizing: border-box; padding: 96px 30px 120px; }
+.pt-slide { display: flex; flex-direction: column; gap: 96px; }
+
+/* Heading block: breadcrumb label, 64px heading, lead text */
+.pt-heading { display: flex; flex-direction: column; gap: 24px; }
+.pt-h1, .pt-body h3 { margin: 0; }
+
 .pt-title { margin: 0; font-size: 36px; font-weight: 400; line-height: 1.25; }
 .pt-title em { font-style: normal; }
 .pt-para { margin: 0; font-size: 20px; line-height: 1.25; }
-.pt-eyebrow { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.25em; }
-.pt-muted { margin: 0; color: #949494; }
-.pt-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); }
+
+/* Row: 1px hairline, empty lead column (606), label column (250), body column */
+.pt-row { display: grid; grid-template-columns: 41.7% 17.2% minmax(0, 1fr); border-top: 1px solid #a1a1a1; padding-top: 24px; }
+.pt-row > .pt-label { grid-column: 2; }
+.pt-body { grid-column: 3; display: flex; flex-direction: column; gap: 30px; align-items: flex-start; }
+
+.pt-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px 16px; grid-template-columns: repeat(2, 1fr); font-size: 20px; line-height: 1.25; }
 .pt-stages li { display: flex; flex-direction: column; gap: 4px; }
-.pt-rowlabels, .pt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; }
-.pt-stack { display: flex; flex-direction: column; gap: 24px; }
-.pt-card { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.pt-rowlabels, .pt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 20px; line-height: 1.25; }
 .pt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.pt-steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 8px; font-size: 20px; }
+.pt-steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 8px; font-size: 20px; line-height: 1.25; }
+
+/* Slide controls */
+.pt-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 30px 96px; }
+
+/* CTA band: Dark Grey, 237px, heading inset 171 / button at right (Services frame) */
+.pt-cta { display: flex; align-items: center; justify-content: space-between; height: 237px; padding: 0 170px 0 171px; background: #1A1A1A; color: #fafafa; }
+.pt-cta__title { margin: 0; font-family: 'Aeonik Light', sans-serif; font-size: 64px; font-weight: 300; line-height: 1.1; }
+
+/* Footer: wordmark + link columns + legal line */
+.pt-footer { display: grid; grid-template-columns: 41.7% 17.2% 1fr; align-items: start; gap: 0; padding: 56px 30px 32px; row-gap: 56px; }
+.pt-footer__brand { font-family: 'Aeonik Light', sans-serif; font-size: 28px; color: #4d4d4d; }
+.pt-footer__col { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; grid-row: 1; }
+.pt-footer__col:nth-of-type(1) { grid-column: 2; }
+.pt-footer__col:nth-of-type(2) { grid-column: 3; }
+.pt-footer__legal { grid-column: 1 / -1; }
