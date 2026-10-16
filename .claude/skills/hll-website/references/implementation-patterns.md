@@ -148,3 +148,44 @@ individual fields in place (the one exception each file allows: swapping
 `params.base`/`params.hover` *colors*, which the corresponding
 `*-variants.js` file already does per-variant at mount time — don't
 duplicate that logic inside the definition file itself).
+
+## Buttons on assembled pages (nav, tabs, steppers)
+
+Every clickable control on a page is an existing button component — never a
+hand-styled `<button>`/`<li>`/`<a>` that imitates one.
+
+- **Top-nav items** (Services, Industries, Engagement, About, Contact) →
+  `HLLButton` with the matching menu-item `variant` (lower-cased label).
+- **Tabs / step switchers / Back-style controls** → `HLLOutlineButton`
+  (variant chosen from the six HLL services, e.g. the slide heading's
+  gradient). Primary CTAs and Next → `HLLButton`.
+- Do not add padding, borders, height, font or color overrides on these
+  buttons; the component sets height, horizontal padding, typography and
+  states. Layout glue goes on the *wrapper* (`ul`/`nav`/`div`), not the button.
+- `HLLOutlineButton` has no "selected" look. Mark the current item with
+  `aria-current` only, and say so in the summary rather than inventing a
+  state style. (Files are `.jsx`; a request that says `HLLOutlineButton.tsx`
+  means `src/components/hll-outline-button/HLLOutlineButton.jsx`.)
+
+## Glow-canvas bleed — the usual cause of horizontal overflow
+
+`HLLButton`/`HLLOutlineButton`/`Tag` draw their glow on an absolutely
+positioned `<canvas>` roughly 57px larger than the button on every side
+(measured: 96px-wide button → 210px canvas; 36px → 79px tall). A button
+sitting near the right edge, inside a gutter smaller than that bleed (the
+page gutter is 30px), pushes the canvas past the viewport and the page
+scrolls sideways at *every* width, not only on mobile.
+
+Diagnose by measuring, not guessing: compare `documentElement.scrollWidth`
+with `clientWidth`, then list elements whose `getBoundingClientRect().right`
+exceeds the viewport — the offender shows up as a `CANVAS` inside a
+`button.hll-button`. Fix at the full-width band that holds the buttons
+(header, tab row, controls row, CTA band) with `overflow-x: clip` — x-axis
+only, so the vertical glow stays visible — plus `min-width: 0`/`flex-wrap`
+where rows can be too narrow. Do not put `overflow-x: hidden` on `body`/page
+(it hides real overflow and breaks vertical glow/sticky), and do not
+shrink or restyle the buttons.
+
+Verify at 1440 / 1024 / 768 / 402px on every slide/tab: `scrollWidth ===
+clientWidth`. Iframes of the page at each width work when the browser window
+can't be resized; wait ~3s per load for React to mount before measuring.

@@ -131,4 +131,6 @@ Full procedure, new-component gate, and checklist: [[implementation-patterns]]
 - Do not silently resolve the known naming mismatches between components (e.g. `ripple`'s `hll-trust-and-governance` vs. `hll-button`'s `hll-trust`) — surface them, see [[known-gaps]].
 - Do not claim a Figma page is "implemented" just because some of its visual components exist in React — most Figma pages have no assembled React page yet (see [[known-gaps]]).
 - Do not modify `*-definition.js` files casually — they are documented as frozen exports from LightFX Studio, re-copied wholesale when Studio's preset changes, not hand-tuned in place.
+- Do not hand-style a button, nav item or tab to look like an HLL button — use `HLLButton` (nav, CTAs) or `HLLOutlineButton` (tabs, Back) unmodified; see [[implementation-patterns]].
+- Do not "fix" horizontal scroll with `overflow-x: hidden` on the page, and do not assume the layout is at fault: the HLL buttons' glow canvases bleed ~57px past the button and overflow right-edge gutters. Measure, then clip only the full-width band — see [[implementation-patterns]] ("Glow-canvas bleed").
 - Do not treat a presentation, doc, or PRD you generate as a new source of truth for a future request — always re-derive from Figma/code/this skill.

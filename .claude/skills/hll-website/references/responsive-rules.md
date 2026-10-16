@@ -29,6 +29,18 @@ existing 402px/1512px switch, fluid scaling, or container-query logic to
 reuse. `HLLButton`/`HLLOutlineButton` do have a `size` prop (`sm`/`md`/`lg`)
 but that is an explicit per-usage choice, not a responsive breakpoint.
 
+## Page-level breakpoints used so far
+
+`src/pages/port-turnaround-deck/port-turnaround-deck.css` has one
+`@media (max-width: 900px)` block (smaller H1/title/paragraph sizes, stacked
+section labels, wrapped header). **900px is not from Figma** — it is an
+assumed breakpoint, and the mobile type sizes there are scaled guesses, not
+the Figma 402px values. Treat it as provisional. See [[known-gaps]].
+
+Also see [[implementation-patterns]] ("Glow-canvas bleed") before debugging
+any horizontal scroll: the buttons' glow canvases, not the layout, are the
+usual cause.
+
 ## Implication for implementation requests
 
 If asked to "implement the mobile version" of a page or component:

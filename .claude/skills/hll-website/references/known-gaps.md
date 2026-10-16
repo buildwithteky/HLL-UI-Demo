@@ -76,6 +76,23 @@ exposes an industry-keyed variant set. If asked to implement an Industry
 page, this token set would need to be added as new variant data — say so
 rather than reusing the existing 11-variant system, which doesn't cover it.
 
+## Port Turnaround deck (`#/port-turnaround-deck`) — open items
+
+- **AG Functional** (spec's secondary font for section index/small labels)
+  is not in the repo; the page uses Sometype Mono, the design-system's
+  Functional UI Text, as the stand-in. Needs the font file to resolve.
+- **Aeonik Medium** was missing; `AeonikTRIAL-Medium.otf` is now registered
+  as `'Aeonik Medium'` in `our-promise.css` and used for eyebrows.
+- **Section index color:** the Figma screenshot shows `#FE5844`; the page
+  follows the written rule (Mid Grey `#949494`) by user decision.
+- **Active tab state:** `HLLOutlineButton` has no selected style; only
+  `aria-current` is set.
+- **900px breakpoint / mobile sizes** are assumed (see [[responsive-rules]]).
+- **Paragraph copy** was condensed to ~7–8-word lines by the implementer, not
+  approved copy.
+- The reference doc `hll-design-values-extracted.md` lives outside the repo
+  (`../design-specs/`), which is not a git repository.
+
 ## Not independently verified this pass
 
 - Exact per-sub-link routing behavior in any mega-menu.

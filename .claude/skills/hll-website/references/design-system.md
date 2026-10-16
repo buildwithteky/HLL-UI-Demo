@@ -22,6 +22,10 @@ Two typefaces: **Aeonik TRIAL** (headlines/body/titles/section headings) and
 | Section Heading | Aeonik Regular, 12px, uppercase, tracking 25% | Aeonik Regular, 10px, uppercase, tracking 25% |
 | Functional UI Text | Sometype Mono Regular, 12px, uppercase | Sometype Mono Regular, 10px |
 
+Registered font-faces in the repo (`our-promise.css`): Aeonik Light (300),
+Aeonik Regular (400), Aeonik Medium (500), plus Sometype Mono via Google
+Fonts. AG Functional is **not** available — see [[known-gaps]].
+
 Colors used in type: Dark Grey `#1A1A1A` (primary text), Mid Grey `#949494`
 (secondary/caption text), label grey `#818181` (spec-sheet annotations,
 not final UI).
