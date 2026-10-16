@@ -23,6 +23,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Aeonik Medium';
+  src: url('./Aeonik TRIAL/AeonikTRIAL-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 .our-promise {
   position: relative;
 }
