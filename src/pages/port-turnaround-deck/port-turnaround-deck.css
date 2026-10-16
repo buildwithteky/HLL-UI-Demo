@@ -93,3 +93,10 @@
   .pd-footer__col:nth-of-type(1), .pd-footer__col:nth-of-type(2) { grid-column: auto; grid-row: 2; }
   .pd-footer__brand { grid-column: 1 / -1; }
 }
+
+/* HLL buttons draw their glow on a canvas ~57px larger than the button on every
+   side. In full-width bands that glow would extend past the viewport edge and
+   create a horizontal scrollbar, so these bands clip the x-axis only (the glow
+   past the viewport edge is invisible anyway; vertical glow stays visible). */
+.pd-header, .pd-tabs, .pd-controls, .pd-cta { overflow-x: clip; }
+.pd-main, .pd-page { min-width: 0; }
