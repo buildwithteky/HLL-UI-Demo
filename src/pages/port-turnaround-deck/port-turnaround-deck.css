@@ -1,6 +1,6 @@
 /* port-turnaround-deck.css — layout glue for the presentation page, built on
    the values in design-specs/hll-design-values-extracted.md. Tokens are scoped
-   to .pd-page so nothing global changes. Fonts: Aeonik TRIAL (Light/Regular)
+   to .pd-page so nothing global changes. Fonts: Aeonik TRIAL (Light/Regular/Medium)
    and Sometype Mono (the repo's registered stand-in for the spec's
    "AG Functional") — see the page header comment for open items. */
 .pd-page {
@@ -9,6 +9,7 @@
   --hll-hairline: #a1a1a1;          /* existing port-turnaround hairline */
   --hll-font-primary: 'Aeonik Regular', sans-serif;
   --hll-font-light: 'Aeonik Light', sans-serif;
+  --hll-font-medium: 'Aeonik Medium', sans-serif;
   --hll-font-secondary: 'Sometype Mono', monospace;
   --hll-nav-size: 12px;
   --hll-nav-letter-spacing: 0.25em;
@@ -36,7 +37,7 @@
 
 /* Text styles */
 .pd-nav { margin: 0; font-size: var(--hll-nav-size); text-transform: uppercase; letter-spacing: var(--hll-nav-letter-spacing); color: var(--hll-mid-grey); }
-.pd-eyebrow { margin: 0; font-size: var(--hll-eyebrow-size); text-transform: uppercase; letter-spacing: var(--hll-nav-letter-spacing); }
+.pd-eyebrow { margin: 0; font-family: var(--hll-font-medium); font-weight: 500; font-size: var(--hll-eyebrow-size); text-transform: uppercase; letter-spacing: var(--hll-nav-letter-spacing); }
 .pd-index { margin: 0; font-family: var(--hll-font-secondary); font-size: var(--hll-section-index-size); text-transform: uppercase; color: var(--hll-mid-grey); }
 .pd-secondary { margin: 0; font-family: var(--hll-font-secondary); font-size: var(--hll-section-index-size); text-transform: uppercase; color: var(--hll-mid-grey); }
 .pd-h1 { margin: 0; max-width: var(--hll-main-heading-width); }

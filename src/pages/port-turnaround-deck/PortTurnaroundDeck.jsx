@@ -5,16 +5,15 @@
 // Paragraph copy is condensed from the existing page into ~7–8-word lines
 // (spec content rule); no new facts are introduced.
 //
-// Open items vs. the spec (see summary): "AG Functional" and Aeonik Medium are
-// not registered in this repo, so the secondary role uses Sometype Mono (the
-// design-system's Functional UI Text) and the eyebrow renders in Aeonik Regular.
+// Open item vs. the spec: "AG Functional" is not available in this repo, so the
+// secondary role uses Sometype Mono (the design-system's Functional UI Text).
 import { useCallback, useEffect, useState } from 'react';
 import { GradientRevealTextNormal } from '../../components/heading-anim-normal';
 import { HLLButton } from '../../components/hll-button';
 import { HLLOutlineButton } from '../../components/hll-outline-button';
 import { Tag } from '../../components/tag';
 import { Workbench } from '../../components/workbench';
-import '../../components/our-promise/our-promise.css'; // registers Aeonik Light/Regular + Sometype Mono
+import '../../components/our-promise/our-promise.css'; // registers Aeonik Light/Regular/Medium + Sometype Mono
 import {
   STAGES, PEOPLE, SYSTEMS, BUILD_STEPS, STACK, NAV, FOOTER_SITE, FOOTER_SERVICES,
 } from '../port-turnaround/PortTurnaround.jsx';
