@@ -48,12 +48,10 @@
 .pd-muted { color: var(--hll-mid-grey); }
 
 /* Header, tabs */
-.pd-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 72px; padding: 0 var(--hll-gutter); }
+.pd-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 0 var(--hll-gutter); }
 .pd-brand { font-size: 18px; }
-.pd-menu { display: flex; gap: 42px; list-style: none; margin: 0; padding: 0; }
+.pd-menu { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .pd-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--hll-gutter); }
-.pd-tab { height: 38px; padding: 0 22px; background: none; border: 1px solid var(--hll-hairline); border-radius: 4px; cursor: pointer; color: var(--hll-mid-grey); }
-.pd-tab.is-current { color: var(--hll-ink); border-color: var(--hll-ink); }
 
 .pd-main { flex: 1; box-sizing: border-box; padding: 96px var(--hll-gutter) 120px; }
 .pd-slide { display: flex; flex-direction: column; gap: 96px; }
@@ -86,7 +84,8 @@
 
 @media (max-width: 900px) {
   .pd-page { --hll-main-heading-width: 100%; --hll-h1-size: 40px; --hll-title-size: 28px; --hll-paragraph-large-size: 20px; --hll-gap-label-body: 24px; --hll-gutter: 20px; }
-  .pd-menu { display: none; }
+  .pd-header { flex-direction: column; align-items: flex-start; padding-top: 16px; padding-bottom: 16px; }
+  .pd-menu { justify-content: flex-start; }
   .pd-section { flex-direction: column; }
   .pd-section__label { flex-basis: auto; flex-direction: row; gap: 16px; }
   .pd-cta { flex-direction: column; justify-content: center; gap: 24px; padding: 0 20px; text-align: center; }

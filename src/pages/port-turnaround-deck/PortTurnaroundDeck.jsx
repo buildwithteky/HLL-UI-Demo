@@ -20,6 +20,7 @@ import {
 import './port-turnaround-deck.css';
 
 const STEPS = ['Problem', 'Approach', 'Demo'];
+const TAB_VARIANTS = ['hll-ai', 'hll-ontology', 'hll-application']; // match each slide's heading gradient
 const pad = (n) => String(n).padStart(2, '0');
 
 // Layer copy: one short paragraph per line, optional sub-list (14px list style).
@@ -198,17 +199,18 @@ export default function PortTurnaroundDeck() {
     <div className="pd-page">
       <header className="pd-header">
         <span className="pd-brand">Hyper Lychee Labs</span>
-        <ul className="pd-menu pd-nav" aria-label="Site sections">
-          {NAV.map((n) => <li key={n}>{n}</li>)}
+        <ul className="pd-menu" aria-label="Site sections">
+          {NAV.map((n) => (
+            <li key={n}><HLLButton variant={n.toLowerCase()}>{n}</HLLButton></li>
+          ))}
         </ul>
       </header>
 
       <nav className="pd-tabs" aria-label="Slides">
         {STEPS.map((s, n) => (
-          <button key={s} type="button" className={`pd-tab pd-nav${n === i ? ' is-current' : ''}`}
-            aria-current={n === i ? 'step' : undefined} onClick={() => go(n)}>
+          <HLLOutlineButton key={s} variant={TAB_VARIANTS[n]} aria-current={n === i ? 'step' : undefined} onClick={() => go(n)}>
             {n + 1} {s}
-          </button>
+          </HLLOutlineButton>
         ))}
       </nav>
 
