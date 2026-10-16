@@ -9,6 +9,7 @@ import { Tag } from './components/tag';
 import { Shader, MenuTriggerOverlay } from './components/shader';
 import { BottomShader } from './components/bottom-shader';
 import PortTurnaround from './pages/port-turnaround';
+import PortTurnaroundDeck from './pages/port-turnaround-deck';
 import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.jsx';
 
 // This demonstrates the actual reusable components — same imports a
@@ -22,6 +23,7 @@ import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.js
 export default function App() {
   // Hash route: #/port-turnaround renders the page; anything else keeps the demo harness.
   if (window.location.hash === '#/port-turnaround') return <PortTurnaround />;
+  if (window.location.hash === '#/port-turnaround-deck') return <PortTurnaroundDeck />;
   return (
     <>
       {/* Buttons */}
