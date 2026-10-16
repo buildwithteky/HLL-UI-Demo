@@ -1,0 +1,95 @@
+/* port-turnaround-deck.css — layout glue for the presentation page, built on
+   the values in design-specs/hll-design-values-extracted.md. Tokens are scoped
+   to .pd-page so nothing global changes. Fonts: Aeonik TRIAL (Light/Regular)
+   and Sometype Mono (the repo's registered stand-in for the spec's
+   "AG Functional") — see the page header comment for open items. */
+.pd-page {
+  --hll-mid-grey: #949494;          /* exact: Figma colour picker */
+  --hll-ink: #1A1A1A;               /* design-system Dark Grey (spec exposes no hex) */
+  --hll-hairline: #a1a1a1;          /* existing port-turnaround hairline */
+  --hll-font-primary: 'Aeonik Regular', sans-serif;
+  --hll-font-light: 'Aeonik Light', sans-serif;
+  --hll-font-secondary: 'Sometype Mono', monospace;
+  --hll-nav-size: 12px;
+  --hll-nav-letter-spacing: 0.25em;
+  --hll-h1-size: 64px;
+  --hll-title-size: 36px;
+  --hll-paragraph-large-size: 24px;
+  --hll-paragraph-large-line-height: 1.25;
+  --hll-eyebrow-size: 12px;
+  --hll-section-index-size: 12px;
+  --hll-list-size: 14px;
+  --hll-main-heading-width: 70vw;
+  /* Auto Layout gaps measured in the spec */
+  --hll-gap-stat: 10px;
+  --hll-gap-label: 12px;
+  --hll-gap-desc-list: 24px;
+  --hll-gap-index-title: 36px;
+  --hll-gap-capabilities: 72px;
+  --hll-gap-label-body: 123px;
+  --hll-gutter: 30px;               /* existing page gutter (Figma frame) */
+
+  width: 100%; max-width: 1512px; margin: 0 auto; min-height: 100vh; align-self: stretch;
+  display: flex; flex-direction: column;
+  color: var(--hll-ink); background: #fafafa; font-family: var(--hll-font-primary);
+}
+
+/* Text styles */
+.pd-nav { margin: 0; font-size: var(--hll-nav-size); text-transform: uppercase; letter-spacing: var(--hll-nav-letter-spacing); color: var(--hll-mid-grey); }
+.pd-eyebrow { margin: 0; font-size: var(--hll-eyebrow-size); text-transform: uppercase; letter-spacing: var(--hll-nav-letter-spacing); }
+.pd-index { margin: 0; font-family: var(--hll-font-secondary); font-size: var(--hll-section-index-size); text-transform: uppercase; color: var(--hll-mid-grey); }
+.pd-secondary { margin: 0; font-family: var(--hll-font-secondary); font-size: var(--hll-section-index-size); text-transform: uppercase; color: var(--hll-mid-grey); }
+.pd-h1 { margin: 0; max-width: var(--hll-main-heading-width); }
+.pd-stat { margin: 0; font-family: var(--hll-font-light); font-size: var(--hll-h1-size); font-weight: 300; line-height: 1; }
+.pd-title { margin: 0; font-size: var(--hll-title-size); font-weight: 400; line-height: 1.25; }
+.pd-p { margin: 0; max-width: 595px; font-size: var(--hll-paragraph-large-size); line-height: var(--hll-paragraph-large-line-height); }
+.pd-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: var(--hll-list-size); }
+.pd-muted { color: var(--hll-mid-grey); }
+
+/* Header, tabs */
+.pd-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 72px; padding: 0 var(--hll-gutter); }
+.pd-brand { font-size: 18px; }
+.pd-menu { display: flex; gap: 42px; list-style: none; margin: 0; padding: 0; }
+.pd-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--hll-gutter); }
+.pd-tab { height: 38px; padding: 0 22px; background: none; border: 1px solid var(--hll-hairline); border-radius: 4px; cursor: pointer; color: var(--hll-mid-grey); }
+.pd-tab.is-current { color: var(--hll-ink); border-color: var(--hll-ink); }
+
+.pd-main { flex: 1; box-sizing: border-box; padding: 96px var(--hll-gutter) 120px; }
+.pd-slide { display: flex; flex-direction: column; gap: 96px; }
+
+/* Heading block: eyebrow + H1 at 12px, title below */
+.pd-heading { display: flex; flex-direction: column; gap: var(--hll-gap-label); }
+.pd-heading .pd-title { margin-top: 24px; }
+
+/* Section: label column (index over eyebrow, 36px) + body, 123px apart */
+.pd-section { display: flex; gap: var(--hll-gap-label-body); border-top: 1px solid var(--hll-hairline); padding-top: 24px; }
+.pd-section__label { flex: 0 0 200px; display: flex; flex-direction: column; gap: var(--hll-gap-label); }
+.pd-section__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--hll-gap-index-title); align-items: flex-start; }
+.pd-group { display: flex; flex-direction: column; gap: var(--hll-gap-desc-list); align-items: flex-start; }
+.pd-paras { display: flex; flex-direction: column; gap: 8px; }
+.pd-stats { display: flex; gap: var(--hll-gap-capabilities); flex-wrap: wrap; }
+.pd-stat-pair { display: flex; flex-direction: column; gap: var(--hll-gap-stat); }
+.pd-stat-pair .pd-list { max-width: 240px; }
+.pd-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.pd-cols { display: flex; flex-wrap: wrap; gap: var(--hll-gap-capabilities); }
+
+.pd-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--hll-gutter) 96px; }
+.pd-cta { display: flex; align-items: center; justify-content: space-between; height: 237px; padding: 0 170px 0 171px; background: var(--hll-ink); color: #fafafa; }
+.pd-cta__title { margin: 0; font-family: var(--hll-font-light); font-size: var(--hll-h1-size); font-weight: 300; line-height: 1.1; }
+.pd-footer { display: grid; grid-template-columns: 41.7% 17.2% 1fr; align-items: start; padding: 56px var(--hll-gutter) 32px; row-gap: 56px; }
+.pd-footer__brand { font-family: var(--hll-font-light); font-size: 28px; color: #4d4d4d; }
+.pd-footer__col { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; grid-row: 1; }
+.pd-footer__col:nth-of-type(1) { grid-column: 2; }
+.pd-footer__col:nth-of-type(2) { grid-column: 3; }
+.pd-footer__legal { grid-column: 1 / -1; }
+
+@media (max-width: 900px) {
+  .pd-page { --hll-main-heading-width: 100%; --hll-h1-size: 40px; --hll-title-size: 28px; --hll-paragraph-large-size: 20px; --hll-gap-label-body: 24px; --hll-gutter: 20px; }
+  .pd-menu { display: none; }
+  .pd-section { flex-direction: column; }
+  .pd-section__label { flex-basis: auto; flex-direction: row; gap: 16px; }
+  .pd-cta { flex-direction: column; justify-content: center; gap: 24px; padding: 0 20px; text-align: center; }
+  .pd-footer { grid-template-columns: 1fr 1fr; }
+  .pd-footer__col:nth-of-type(1), .pd-footer__col:nth-of-type(2) { grid-column: auto; grid-row: 2; }
+  .pd-footer__brand { grid-column: 1 / -1; }
+}
