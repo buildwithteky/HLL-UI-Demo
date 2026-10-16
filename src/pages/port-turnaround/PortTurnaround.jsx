@@ -15,7 +15,7 @@ import './port-turnaround.css';
 
 const STEPS = ['Problem', 'Approach', 'Demo'];
 
-const STAGES = [
+export const STAGES = [
   'Waiting at anchor',
   'Pilot and tug',
   'Berthing',
@@ -56,8 +56,8 @@ const LAYERS = [
   },
 ];
 
-const PEOPLE = ["The duty manager's workbench", 'Planners', 'Existing dashboards, kept and fed', 'Downstream agents'];
-const SYSTEMS = [
+export const PEOPLE = ["The duty manager's workbench", 'Planners', 'Existing dashboards, kept and fed', 'Downstream agents'];
+export const SYSTEMS = [
   'Terminal operating system',
   'Port community platform',
   'Ship position feeds',
@@ -66,7 +66,7 @@ const SYSTEMS = [
   'Manifests and inspection notes',
   'Radio and email logs',
 ];
-const BUILD_STEPS = [
+export const BUILD_STEPS = [
   'Prove record matching on one small, non-sensitive slice.',
   'Model one narrow slice of meaning with your people.',
   'Build the graph.',
@@ -74,16 +74,16 @@ const BUILD_STEPS = [
   'Add the assistant, with a person approving anything irreversible.',
   'Instrument from day one.',
 ];
-const STACK = ['LinkML', 'Splink', 'Neo4j', 'LangGraph'];
+export const STACK = ['LinkML', 'Splink', 'Neo4j', 'LangGraph'];
 
 
 // Top-nav labels and footer columns as they appear in the Figma frames
 // (nav items = the five menu-item variants; service list is the Services
 // menu's draft sub-links, minus its duplicated "HLL Foundation" — see
 // known-gaps). Plain text: no routes for these exist in this repo.
-const NAV = ['Services', 'Industries', 'Engagement', 'About', 'Contact'];
-const FOOTER_SITE = ['Home', 'About', 'Team', 'Engagement', 'Contact'];
-const FOOTER_SERVICES = ['HLL Kinetic', 'HLL Momentum', 'HLL Governance & Trust', 'HLL Foundation', 'HLL Motion'];
+export const NAV = ['Services', 'Industries', 'Engagement', 'About', 'Contact'];
+export const FOOTER_SITE = ['Home', 'About', 'Team', 'Engagement', 'Contact'];
+export const FOOTER_SERVICES = ['HLL Kinetic', 'HLL Momentum', 'HLL Governance & Trust', 'HLL Foundation', 'HLL Motion'];
 
 // Figma "section row": an empty lead column, a label column, and a body
 // column, under a 1px hairline (measured 606 / 250 / ~596 of the 1452 content width).
