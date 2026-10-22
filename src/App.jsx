@@ -139,7 +139,7 @@ export default function App() {
           defaults, same as the commented-out usage above) sitting directly
           on top of it at the bottom of the viewport. See
           bottom-shader/ServicesScrollDemo.jsx. */}
-      {/* <ServicesScrollDemo /> */}
+      <ServicesScrollDemo />
 
       {/* Services.png as a fullscreen backdrop with Shader mounted on top
           of it exactly as it renders by default — opaque, no blend mode.
