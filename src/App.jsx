@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { HLLButton } from './components/hll-button';
 import { HLLOutlineButton } from './components/hll-outline-button';
 import { GradientRevealTextSlow } from './components/heading-anim-slow';
@@ -12,6 +13,9 @@ import PortTurnaround from './pages/port-turnaround';
 import PortTurnaroundDeck from './pages/port-turnaround-deck';
 import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.jsx';
 
+// Unselected toggle is dimmed; the selected one renders at full strength.
+const dim = (active) => ({ opacity: active ? 1 : 0.5 });
+
 // This demonstrates the actual reusable components — same imports a
 // consumer app would use — not a separate demo-only implementation.
 // `variant` is the only thing that changes between these; everything else
@@ -21,20 +25,57 @@ import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.js
 // contact) plus the six per-service gradients (hll-ai/hll-trust/
 // hll-foundation/hll-ontology/hll-people/hll-application).
 export default function App() {
+  const [group, setGroup] = useState('normal');
+
   // Hash route: #/port-turnaround renders the page; anything else keeps the demo harness.
   if (window.location.hash === '#/port-turnaround') return <PortTurnaround />;
   if (window.location.hash === '#/port-turnaround-deck') return <PortTurnaroundDeck />;
   return (
     <>
+      {/* Group switcher — only one button group is shown at a time */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 80,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10,
+          display: 'flex',
+          gap: 16,
+        }}
+      >
+        <HLLButton
+          variant="services"
+          onClick={() => setGroup('normal')}
+          aria-pressed={group === 'normal'}
+          style={dim(group === 'normal')}
+        >
+          Normal Shader
+        </HLLButton>
+        <HLLOutlineButton
+          variant="services"
+          onClick={() => setGroup('outline')}
+          aria-pressed={group === 'outline'}
+          style={dim(group === 'outline')}
+        >
+          Outline
+        </HLLOutlineButton>
+      </div>
+
+      {/* Keeps the groups below where they were while the switcher is fixed */}
+      <div style={{ height: 92 }} />
+
       {/* Buttons */}
 
-      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      {group === 'normal' && (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLButton variant="services">Services</HLLButton>
         <HLLButton variant="industries">Industries</HLLButton>
         <HLLButton variant="engagement">Engagement</HLLButton>
         <HLLButton variant="about">About</HLLButton>
         <HLLButton variant="contact">Contact</HLLButton>
-      </div> */}
+      </div>
+      )}
 
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLButton variant="hll-ai">HLL AI</HLLButton>
@@ -45,14 +86,16 @@ export default function App() {
         <HLLButton variant="hll-application">HLL Application</HLLButton>
       </div> */}
 
-      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
+      {group === 'outline' && (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="services">Services</HLLOutlineButton>
         <HLLOutlineButton variant="industries">Industries</HLLOutlineButton>
         <HLLOutlineButton variant="engagement">Engagement</HLLOutlineButton>
         <HLLOutlineButton variant="about">About</HLLOutlineButton>
         <HLLOutlineButton variant="contact">Contact</HLLOutlineButton>
         <HLLOutlineButton variant="hll-ontology">Data Engineering</HLLOutlineButton>
-      </div> */}
+      </div>
+      )}
 
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="hll-ai">HLL AI</HLLOutlineButton>
