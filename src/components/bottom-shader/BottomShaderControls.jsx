@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { GROUPS, getPath, setPath, defaultFor, DEFAULT_MASK_STOPS } from './bottom-shader-controls-schema.js';
 import './bottom-shader-controls.css';
 
-function NumInput({ value, onChange, step, nullable, placeholder }) {
+export function NumInput({ value, onChange, step, nullable, placeholder }) {
   const [text, setText] = useState(null); // non-null while the user is typing
   const shown = text ?? (value == null ? '' : String(value));
   const commit = (raw) => {
@@ -39,7 +39,7 @@ function NumInput({ value, onChange, step, nullable, placeholder }) {
   );
 }
 
-function ColorInput({ value, onChange }) {
+export function ColorInput({ value, onChange }) {
   const hex = /^#[0-9a-f]{6}$/i.test(value) ? value : '#000000';
   return (
     <span className="bsc-color">
