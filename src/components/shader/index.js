@@ -8,3 +8,4 @@ export {
   resolveVariantColors,
 } from './shader-variants.js';
 export { BASE_SETTINGS, MULTIPLIER, BLUE_NOISE_SIZE } from './shader-definition.js';
+export { default as ShaderPlayground } from './ShaderPlayground.jsx';

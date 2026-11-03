@@ -19,13 +19,15 @@
 // component just owns the effect's lifecycle and sizes the canvas to
 // whatever its host element renders at (see shader.css) instead of the
 // full page.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createShaderFX } from './shader-runtime.js';
 import { BASE_SETTINGS, MULTIPLIER, BLUE_NOISE_SIZE } from './shader-definition.js';
 import { shaderVariants, resolveVariantColors } from './shader-variants.js';
+import BottomShaderControls from '../bottom-shader/BottomShaderControls.jsx';
+import { SHADER_GROUPS } from '../bottom-shader/bottom-shader-controls-schema.js';
 import './shader.css';
 
-export default function Shader({
+function ShaderBase({
   variant = 'services',
   colors,
   // Defaults to the original opaque, full-bleed BASE_SETTINGS — every
@@ -35,6 +37,9 @@ export default function Shader({
   // to show through instead, e.g. MenuTriggerOverlay.jsx layering this
   // over Services.png.
   settings = BASE_SETTINGS,
+  // Optional: used AS-IS (not cloned) so a control panel can mutate it in
+  // place and the shader reacts next frame with no remount.
+  liveSettings: liveSettingsProp,
   pauseOnDoubleClick = true,
   disabled = false,
   className,
@@ -42,6 +47,7 @@ export default function Shader({
   ...rest
 }) {
   const canvasRef = useRef(null);
+  const fxRef = useRef(null);
   const resolvedColors = colors && colors.length >= 2 ? colors : resolveVariantColors(variant);
 
   // Like HLLButton's `disabled`: an inert, dimmed state. The WebGL effect
@@ -55,17 +61,26 @@ export default function Shader({
     // settings object it's handed never mutates a caller-supplied object
     // or the shared BASE_SETTINGS default — other Shader instances
     // importing the same constant would otherwise see it drift too.
-    const liveSettings = JSON.parse(JSON.stringify(settings));
+    const liveSettings = liveSettingsProp || JSON.parse(JSON.stringify(settings));
     const fx = createShaderFX(canvasRef.current, {
       colors: resolvedColors,
       settings: liveSettings,
       multiplier: MULTIPLIER,
       blueNoiseSize: BLUE_NOISE_SIZE,
       pauseOnDoubleClick,
+      alwaysAlpha: !!liveSettingsProp,
     });
-    return () => fx.dispose();
+    fxRef.current = fx;
+    return () => { fxRef.current = null; fx.dispose(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, colors?.join(','), pauseOnDoubleClick, disabled, settings]);
+  }, [pauseOnDoubleClick, disabled, settings, liveSettingsProp]);
+
+  // Gradient colors swap live (texture rebuild) instead of remounting.
+  const colorKey = resolvedColors.join(',');
+  useEffect(() => {
+    fxRef.current?.setColors(resolvedColors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorKey]);
 
   return (
     <div
@@ -75,5 +90,36 @@ export default function Shader({
     >
       <canvas ref={canvasRef} className="shader__canvas" />
     </div>
+  );
+}
+
+// Public component. `controls` mounts the unrestricted live parameter panel
+// next to the shader: <Shader variant="hll-application" controls />.
+export default function Shader({ controls = false, ...props }) {
+  return controls ? <ShaderWithControls {...props} /> : <ShaderBase {...props} />;
+}
+
+function ShaderWithControls({ settings = BASE_SETTINGS, variant = 'services', colors, ...props }) {
+  const live = useRef(null);
+  if (!live.current) {
+    // Fill keys the runtime defaults internally so every control shows a real value.
+    const c = JSON.parse(JSON.stringify(settings));
+    c.bokeh.spread ??= 1;
+    c.output.capAmount ??= 0;
+    c.background.transparent ??= false;
+    live.current = c;
+  }
+  const [config, setConfig] = useState(() => ({
+    colors: colors && colors.length >= 2 ? colors : resolveVariantColors(variant),
+  }));
+  return (
+    <>
+      <ShaderBase {...props} variant={variant} colors={config.colors} liveSettings={live.current} />
+      <BottomShaderControls
+        title="Shader"
+        groups={SHADER_GROUPS}
+        targets={[{ id: 'shader', label: 'Shader', settings: live.current, config, setConfig }]}
+      />
+    </>
   );
 }
