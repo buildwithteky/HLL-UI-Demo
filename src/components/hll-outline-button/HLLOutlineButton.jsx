@@ -63,7 +63,15 @@ function buildDefinition(variant, overrides) {
   return definition;
 }
 
+// Builds a fully independent, mutable definition for one variant — the object
+// the live control panel edits in place. Pass it back as `definition` and the
+// button renders from it directly (no per-prop overrides applied on top).
+export function createLiveDefinition(variant = 'hll-ai') {
+  return buildDefinition(variant, {});
+}
+
 export default function HLLOutlineButton({
+  definition: liveDefinition,
   variant = 'hll-ai',
   gradient,
   direction,
@@ -89,22 +97,25 @@ export default function HLLOutlineButton({
   useEffect(() => {
     const fx = new LightComponent(
       ref.current,
-      buildDefinition(variant, { gradient, direction, radius, glow, animated, size })
+      liveDefinition || buildDefinition(variant, { gradient, direction, radius, glow, animated, size })
     );
     return () => fx.dispose();
+    // bleed / maxDpr size the canvas at construction, so they rebuild it
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, gradient?.join(','), direction, radius, glow, animated, size]);
+  }, [variant, gradient?.join(','), direction, radius, glow, animated, size, liveDefinition, liveDefinition?.tune?.bleed, liveDefinition?.tune?.maxDpr]);
 
   const isButtonTag = Tag === 'button';
   const isInert = disabled || isLoading;
-  const { text, box } = BASE_DEFINITION;
-  const scale = SIZE_SCALE[size] ?? 1;
+  const { text, box } = liveDefinition || BASE_DEFINITION;
+  // a live definition's box is already size-scaled when it was created
+  const scale = liveDefinition ? 1 : SIZE_SCALE[size] ?? 1;
   // Width follows the label instead of a fixed px value: the button stays
   // an inline-flex box sized by its content, with equal left/right padding
   // (BASE_DEFINITION.text.padding, scaled with size) around the label — so
   // left/right space around the text is always the same regardless of how
   // long the text is. Height stays fixed, matching every other variant.
   const hPadding = Math.round(text.padding * scale);
+  const css = liveDefinition?.css || {};
 
   return (
     <Tag
@@ -127,6 +138,7 @@ export default function HLLOutlineButton({
         whiteSpace: 'nowrap',
         '--hll-outline-label-color': text.color,
         '--hll-outline-label-hover-color': text.hoverColor,
+        ...(liveDefinition && css.width != null ? { width: css.width } : null),
         ...style,
       }}
       {...rest}
@@ -138,9 +150,10 @@ export default function HLLOutlineButton({
           fontSize: text.fontSize,
           fontWeight: text.fontWeight,
           letterSpacing: text.letterSpacing,
+          ...(liveDefinition ? { textTransform: css.textTransform || undefined, lineHeight: css.lineHeight ?? undefined } : null),
         }}
       >
-        {children}
+        {liveDefinition && text.content != null && text.content !== '' && children == null ? text.content : children}
       </span>
       {isLoading && <span className="hll-outline-button__spinner" aria-hidden="true" />}
     </Tag>
