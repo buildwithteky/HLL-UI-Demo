@@ -14,7 +14,7 @@
 // same role as Shader's `colors` prop.
 import { useEffect, useRef } from 'react';
 import { createShaderFX } from '../shader/shader-runtime.js';
-import { MULTIPLIER, BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
+import { BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
 import { DEFAULT_LAYOUT } from './bottom-shader-definition.js';
 import { bottomShaderVariants, resolveVariantColors } from './bottom-shader-variants.js';
 import './bottom-shader.css';
@@ -34,6 +34,10 @@ function layoutStyle(layout) {
   };
 }
 
+// Render scale relative to the canvas's device-pixel size (1 = native, no
+// upscaling blur). Lower it (e.g. 0.8) if GPU cost becomes a problem.
+const BOTTOM_RENDER_SCALE = 1;
+
 function lerp(a, b, t) {
   return a + (b - a) * t;
 }
@@ -49,6 +53,10 @@ export default function BottomShader({
   // opaque full-viewport default, not this crop's). Callers must pass
   // their own `settings` object explicitly.
   settings,
+  // Optional: a settings object used AS-IS (not cloned) so a control panel can
+  // mutate it in place and the running effect picks every change up on the
+  // next frame, with no remount. Takes precedence over `settings`.
+  liveSettings: liveSettingsProp,
   // `atEnd`/`endShatter` together are the "scrolled to the bottom of the
   // page" transition (see ServicesScrollDemo.jsx): when the caller flips
   // `atEnd` to true, shatter.scale/amount smoothly ease toward
@@ -100,6 +108,7 @@ export default function BottomShader({
   ...rest
 }) {
   const canvasRef = useRef(null);
+  const fxRef = useRef(null);
   const resolvedColors = colors && colors.length >= 2 ? colors : resolveVariantColors(variant);
 
   // Read by the transition rAF loop below every frame via `atEndRef.current`
@@ -123,19 +132,25 @@ export default function BottomShader({
     // instances sharing that same object (e.g. two instances both passed
     // ServicesScrollDemo's REF_SETTINGS) would otherwise see their shatter
     // amount silently drift too.
-    const liveSettings = JSON.parse(JSON.stringify(settings));
+    const liveSettings = liveSettingsProp || JSON.parse(JSON.stringify(settings));
     const fx = createShaderFX(canvasRef.current, {
       colors: resolvedColors,
       settings: liveSettings,
-      multiplier: MULTIPLIER,
+      // Full-resolution internal buffers. Shader's shared MULTIPLIER (0.6)
+      // renders every pass at 60% of the canvas size and the browser then
+      // bilinear-upscales it — fine for a fullscreen ambient glow, but this
+      // strip is a small, sharp-edged crop where that upscale reads as blur.
+      multiplier: BOTTOM_RENDER_SCALE,
       blueNoiseSize: BLUE_NOISE_SIZE,
       pauseOnDoubleClick,
       pointerMaxY: layout.POINTER_MAX_Y,
+      alwaysAlpha: !!liveSettingsProp,
     });
+    fxRef.current = fx;
 
     let raf = null;
     if (endShatter) {
-      const baseShatter = { scale: settings.shatter.scale, amount: settings.shatter.amount };
+      const baseShatter = { scale: liveSettings.shatter.scale, amount: liveSettings.shatter.amount };
       let progress = 0; // 0 = resting settings/see-through hard-light, 1 = endShatter/opaque cap
 
       const tick = () => {
@@ -154,10 +169,18 @@ export default function BottomShader({
 
     return () => {
       if (raf != null) cancelAnimationFrame(raf);
+      fxRef.current = null;
       fx.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, colors?.join(','), pauseOnDoubleClick, disabled, settings, endShatter, layout]);
+  }, [pauseOnDoubleClick, disabled, settings, liveSettingsProp, endShatter]);
+
+  // Gradient colors swap live (texture rebuild) instead of remounting.
+  const colorKey = resolvedColors.join(',');
+  useEffect(() => {
+    fxRef.current?.setColors(resolvedColors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorKey]);
 
   const isOverlay = overlay || endShatter;
 
