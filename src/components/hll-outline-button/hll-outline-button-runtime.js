@@ -21,6 +21,28 @@ import * as THREE from 'three';
  * embed its source verbatim into generated framework snippets.
  */
 
+/* Every constant that used to be hardcoded in the fragment shader / frame
+ * loop. Each becomes a live uniform `u_t_<key>` (or a JS-side value), read
+ * from `definition.tune` every frame; a missing key falls back to the
+ * original value below, so untouched definitions render exactly as before. */
+export const DEFAULT_TUNE = {
+  pxScale: 0.5, blurScale: 0.5, blurUncapped: 0, maxSoftFrac: 0.5, dissolveBleedFrac: 0.85,
+  capGlow: 8, capBloom: 8, capFresnel: 8, capScatter: 8,
+  glowFalloff: 0.35, glowInside: 0.85, glowFillMix: 0.3, glowMixAmt: 0.65,
+  bloomFalloff: 0.5, bloomInside: 0.75, bloomWhite: 0.7,
+  rimBase: 0.015, rimSoftMul: 0.8, rimLeakDamp: 0.35, rimWhite: 0.45,
+  hazeFalloff: 0.5, hazeGain: 0.55, hazeInside: 0.5, scatterBoost: 0.35,
+  ringTravel: 0.45, ringSharp: 0.0012,
+  noiseDimBase: 0.82, noiseDimAmp: 0.36, noiseDriftY: 0.7,
+  fbmGain: 0.5, fbmLacunarity: 2.03, fbmOffset: 17.7,
+  gradScale: 1, gradOffset: 0, gradClamp: 1,
+  alphaGlow: 0.85, alphaBloom: 0.3, alphaRim: 0.7, alphaHaze: 1, alphaRing: 0.8, alphaClamp: 1,
+  pulseDecay: 1.1, flashAmount: 1, flashDecay: 6, timeScale: 1, maxDt: 0.1, defaultSpeed: 6,
+  bleed: 0.6, maxDpr: 10,
+};
+const TUNE_UNIFORM_KEYS = Object.keys(DEFAULT_TUNE).filter((k) => k !== 'bleed' && k !== 'maxDpr');
+const TUNE_DECLS = TUNE_UNIFORM_KEYS.map((k) => `uniform float u_t_${k};`).join('\n');
+
 const LIGHTFX_VERTEX = /* glsl */ `
 varying vec2 v_uv;
 void main() {
@@ -35,9 +57,12 @@ varying vec2 v_uv;
 
 uniform vec2  u_resolution;
 uniform float u_bleed;
+${TUNE_DECLS}
+uniform vec2  u_canvasScale; /* canvas size / element size, per axis (whole-pixel bleed) */
 uniform float u_time;
 uniform float u_hover;
 uniform float u_pulse;
+uniform float u_flash; /* click blink: 1 = fully white, decays back to the hover look */
 uniform vec2  u_lightPos;
 
 uniform int   u_shapeType;   /* 0 circle, 1 roundRect, 2 polygon, 3 star, 4 mask */
@@ -164,8 +189,8 @@ float fbm(vec2 p) {
   float a = 0.5;
   for (int i = 0; i < 4; i++) {
     v += a * vnoise(p);
-    p = p * 2.03 + 17.7;
-    a *= 0.5;
+    p = p * u_t_fbmLacunarity + u_t_fbmOffset;
+    a *= u_t_fbmGain;
   }
   return v;
 }
@@ -177,6 +202,7 @@ float fbm(vec2 p) {
    identity for x well under cap, so ordinary values are practically
    untouched. */
 float softCap(float x, float cap) {
+  cap = max(cap, 1e-4);
   return cap * (1.0 - exp(-max(x, 0.0) / cap));
 }
 
@@ -219,7 +245,7 @@ vec3 gradientSample(float t, bool useHover) {
 void main() {
   /* the canvas bleeds past its host element so glow isn't clipped;
      re-map to element-space uv so all params stay element-relative */
-  vec2 uv = (v_uv - 0.5) * (1.0 + 2.0 * u_bleed) + 0.5;
+  vec2 uv = (v_uv - 0.5) * u_canvasScale + 0.5;
   float minRes = min(u_resolution.x, u_resolution.y);
   vec2 asp = u_resolution / minRes;
   vec2 p = (uv - 0.5) * asp;
@@ -232,7 +258,7 @@ void main() {
   /* noise: distorts the shape edge and textures the fill */
   float n = 0.5;
   if (u_noiseAmount > 0.0001) {
-    n = fbm(pr * u_noiseScale + vec2(u_time * u_noiseSpeed, -u_time * u_noiseSpeed * 0.7));
+    n = fbm(pr * u_noiseScale + vec2(u_time * u_noiseSpeed, -u_time * u_noiseSpeed * u_t_noiseDriftY));
     d += (n - 0.5) * u_noiseAmount;
   }
 
@@ -270,7 +296,7 @@ void main() {
      fade. Soft-cap the half-width to the room actually available, rather
      than hard-clamping it, so radius keeps visibly growing (just with
      diminishing returns) instead of flatlining past a fixed number. */
-  float px = 1.5 / minRes;
+  float px = u_t_pxScale / minRes;
   float shapeHalfExtent = 0.5 * max(u_shapeSize, 1e-4);
   /* Default (u_dissolve off): the fade may only soften to half the shape's
      half-extent, so a solid core always remains — the original conservative
@@ -281,11 +307,11 @@ void main() {
   float maxSoft;
   if (u_dissolve > 0.5) {
     float bleedRoom = (0.5 + u_bleed) - shapeHalfExtent;
-    maxSoft = max(min(shapeHalfExtent, bleedRoom * 0.85), px);
+    maxSoft = max(min(shapeHalfExtent, bleedRoom * u_t_dissolveBleedFrac), px);
   } else {
-    maxSoft = max(shapeHalfExtent * 0.5, px);
+    maxSoft = max(shapeHalfExtent * u_t_maxSoftFrac, px);
   }
-  float softFull = max(px, softCap(u_blur * 0.5, maxSoft));
+  float softFull = max(px, mix(softCap(u_blur * u_t_blurScale, maxSoft), u_blur * u_t_blurScale, u_t_blurUncapped));
   float soft = mix(px, softFull, focus);
   /* u_cursorExpand is an absolute radius bump (same units as blur), not a
      multiple of the configured blur, so the edge visibly melts under the
@@ -317,14 +343,15 @@ void main() {
      stays base everywhere) instead of pre-mixing a single color for the
      whole shape, so the hover gradient visibly bleeds in from the cursor's
      position rather than the shape recoloring everywhere at once. */
-  float leakColor = leak * clamp(u_cursorColorLeak, 0.0, 1.0);
+  float leakColor = leak * u_cursorColorLeak;
   vec3 glowColorLocal = mix(u_glowColor, u_glowColorHover, leakColor);
 
   float ga = u_gradientAngle;
   vec2 gdir = vec2(cos(ga), sin(ga));
-  float t = clamp(dot(uv - 0.5, gdir) + 0.5, 0.0, 1.0);
+  float tRaw = dot(uv - 0.5, gdir) * u_t_gradScale + 0.5 + u_t_gradOffset;
+  float t = mix(tRaw, clamp(tRaw, 0.0, 1.0), u_t_gradClamp);
   vec3 baseCol = mix(gradientSample(t, false), gradientSample(t, true), leakColor);
-  if (u_noiseAmount > 0.0001) baseCol *= 0.82 + 0.36 * n;
+  if (u_noiseAmount > 0.0001) baseCol *= u_t_noiseDimBase + u_t_noiseDimAmp * n;
 
   /* glow and bloom hug the edge and radiate outward; inside the fill they
      fall to a faint remainder instead of flooding it. Each of these
@@ -336,46 +363,46 @@ void main() {
      while still growing visibly at every input value, rather than hard-
      clamping to a fixed ceiling past which more input does nothing. */
   float outer = max(d, 0.0);
-  float glowI = softCap(u_glowIntensity, 8.0);
-  float bloomI = softCap(u_bloom, 8.0);
-  float fresnelI = softCap(u_fresnel, 8.0);
-  float scatterI = softCap(u_scatter, 8.0);
-  float glow = glowI * exp(-outer / max(u_glowRadius * 0.35, 1e-3)) * (1.0 - shape * 0.85);
+  float glowI = softCap(u_glowIntensity, u_t_capGlow);
+  float bloomI = softCap(u_bloom, u_t_capBloom);
+  float fresnelI = softCap(u_fresnel, u_t_capFresnel);
+  float scatterI = softCap(u_scatter, u_t_capScatter);
+  float glow = glowI * exp(-outer / max(u_glowRadius * u_t_glowFalloff, 1e-3)) * (1.0 - shape * u_t_glowInside);
   /* bloom's falloff scale was wide enough to wash a large area around the
      shape with a barely-there tinted haze — invisible on a dark page (reads
      as extra glow) but a visible gray smudge on a light one. Tightened so it
      stays a halo close to the edge, closer to glow's own reach. */
-  float bloom = bloomI * exp(-(outer * outer) / max(u_glowRadius * u_glowRadius * 0.5, 1e-4)) * (1.0 - shape * 0.75);
+  float bloom = bloomI * exp(-(outer * outer) / max(u_glowRadius * u_glowRadius * u_t_bloomFalloff, 1e-4)) * (1.0 - shape * u_t_bloomInside);
   /* the fresnel rim is a thin bright line hugging the edge; widening it via
      'soft' alone (already boosted above) just makes a thicker line, which
      still reads as a crisp border. Knocking its peak intensity down where
      the cursor sits, on top of the widening, is what actually makes it
      read as "the border blurred/melted" instead of "the border got fat". */
-  float rim = fresnelI * mix(1.0, 0.35, leak) * exp(-abs(d) / (0.015 + soft * 0.8));
+  float rim = fresnelI * mix(1.0, u_t_rimLeakDamp, leak) * exp(-abs(d) / max(u_t_rimBase + soft * u_t_rimSoftMul, 1e-5));
 
   /* light scatter around the (cursor-following) light position; lp/ld/
      focusMask were already computed above to drive the directional blur */
-  float haze = scatterI * focusMask * exp(-outer / 0.5) * 0.55 * (1.0 - shape * 0.5);
-  baseCol *= 1.0 + scatterI * focusMask * 0.35;
+  float haze = scatterI * focusMask * exp(-outer / max(u_t_hazeFalloff, 1e-4)) * u_t_hazeGain * (1.0 - shape * u_t_hazeInside);
+  baseCol *= 1.0 + scatterI * focusMask * u_t_scatterBoost;
 
   /* click pulse: ring expanding outward from the shape edge */
   float ring = 0.0;
   if (u_pulse > 0.001) {
-    float rp = (1.0 - u_pulse) * 0.45;
+    float rp = (1.0 - u_pulse) * u_t_ringTravel;
     float rd = abs(outer - rp);
     /* squared falloff so the ripple visibly fades rather than snapping off */
-    ring = exp(-(rd * rd) / 0.0012) * u_pulse * u_pulse;
+    ring = exp(-(rd * rd) / max(u_t_ringSharp, 1e-6)) * u_pulse * u_pulse;
   }
 
-  vec3 glowMix = mix(baseCol, glowColorLocal, 0.65);
+  vec3 glowMix = mix(baseCol, glowColorLocal, u_t_glowMixAmt);
   /* bloom represents emitted light, not a tinted fill — biasing it toward
      white keeps it reading as "glow" (bright, low-alpha) instead of "stain"
      (dim, moderate-alpha) once composited over a light background */
-  vec3 bloomMix = mix(baseCol, vec3(1.0), 0.7);
+  vec3 bloomMix = mix(baseCol, vec3(1.0), u_t_bloomWhite);
   vec3 col = baseCol * vec3(shapeR, shape, shapeB) * u_fillOpacity;
-  col += glowColorLocal * glow * (1.0 - shape * 0.3);
+  col += glowColorLocal * glow * (1.0 - shape * u_t_glowFillMix);
   col += bloomMix * bloom;
-  col += mix(baseCol, vec3(1.0), 0.45) * rim;
+  col += mix(baseCol, vec3(1.0), u_t_rimWhite) * rim;
   col += glowMix * haze;
   col += glowColorLocal * ring;
   /* saturation adjusts the composited fill (base + glow/bloom/rim/haze/ring
@@ -383,6 +410,8 @@ void main() {
      turning it down also mutes the colored glow/bloom, not just the base
      fill. Luminance-preserving mix toward grayscale (0) or extrapolated past
      the original color (>1); 1 leaves col untouched. */
+  /* click blink: swap the composited fill toward plain white (per-channel shape mask) */
+  col = mix(col, vec3(shapeR, shape, shapeB), u_flash * u_t_flashAmount);
   float colLum = dot(col, vec3(0.2126, 0.7152, 0.0722));
   col = mix(vec3(colLum), col, u_saturation);
   col *= u_intensity;
@@ -392,16 +421,16 @@ void main() {
      read as a light brightening (color near-white, low alpha) rather than a
      moderate-alpha tinted fill, which is what showed up as a gray smudge on
      light backgrounds */
-  alpha = max(alpha, clamp(glow * 0.85 + bloom * 0.3, 0.0, 1.0));
-  alpha = max(alpha, clamp(rim * 0.7, 0.0, 1.0));
-  alpha = max(alpha, clamp(haze, 0.0, 1.0));
-  alpha = max(alpha, clamp(ring * 0.8, 0.0, 1.0));
-  alpha = clamp(alpha, 0.0, 1.0);
+  alpha = max(alpha, glow * u_t_alphaGlow + bloom * u_t_alphaBloom);
+  alpha = max(alpha, rim * u_t_alphaRim);
+  alpha = max(alpha, haze * u_t_alphaHaze);
+  alpha = max(alpha, ring * u_t_alphaRing);
   /* optional: fade toward transparent right where the cursor is, instead of
      (or alongside) the color leak — a "hole" in the surface rather than a
      tint. 0 by default, so existing components are unaffected. */
-  alpha *= clamp(1.0 - leak * clamp(u_cursorTransparency, 0.0, 1.0), 0.0, 1.0);
+  alpha *= (1.0 - leak * u_cursorTransparency);
   alpha *= u_opacity;
+  alpha = mix(alpha, clamp(alpha, 0.0, 1.0), u_t_alphaClamp);
 
   gl_FragColor = vec4(col, alpha);
 }`;
@@ -649,11 +678,13 @@ export class LightComponent {
   constructor(element, definition, options = {}) {
     this.el = element;
     this.def = definition;
-    this.dpr = Math.min(window.devicePixelRatio || 1, options.maxDpr || 2);
+    this.tune = () => ({ ...DEFAULT_TUNE, ...(this.def.tune || {}) });
+    this.maxDpr = options.maxDpr ?? this.tune().maxDpr;
+    this.dpr = Math.min(window.devicePixelRatio || 1, this.maxDpr);
     // canvas extends past the element on every side so glow isn't clipped.
     // 0.6 gives enough room even on very flat/wide elements (e.g. buttons),
     // where the short axis previously clipped glow/bloom into a hard edge.
-    this.bleed = options.bleed === undefined ? 0.6 : options.bleed;
+    this.bleed = options.bleed === undefined ? this.tune().bleed : options.bleed;
 
     if (getComputedStyle(element).position === 'static') {
       element.style.position = 'relative';
@@ -678,9 +709,12 @@ export class LightComponent {
     this.uniforms = {
       u_resolution: { value: new THREE.Vector2(1, 1) },
       u_bleed: { value: this.bleed },
+      ...Object.fromEntries(TUNE_UNIFORM_KEYS.map((k) => ['u_t_' + k, { value: DEFAULT_TUNE[k] }])),
+      u_canvasScale: { value: new THREE.Vector2(1 + 2 * this.bleed, 1 + 2 * this.bleed) },
       u_time: { value: 0 },
       u_hover: { value: 0 },
       u_pulse: { value: 0 },
+      u_flash: { value: 0 },
       u_lightPos: { value: new THREE.Vector2(0.5, 0.5) },
       u_shapeType: { value: 1 },
       u_shapeSize: { value: 0.8 },
@@ -734,6 +768,7 @@ export class LightComponent {
     this.hoverT = 0;
     this.hoverTarget = 0;
     this.pulse = 0;
+    this.flash = 0;
     this.mouse = [0.5, 0.5];
     this.lightT = [0.5, 0.5];
     this.hovering = false;
@@ -750,12 +785,15 @@ export class LightComponent {
     };
     this.onDown = () => {
       if (this.def.interaction.clickPulse) this.pulse = 1;
+      if (this.def.interaction.clickFlash !== false) this.flash = 1;
     };
     element.addEventListener('pointerenter', this.onEnter);
     element.addEventListener('pointerleave', this.onLeave);
     element.addEventListener('pointermove', this.onMove);
     element.addEventListener('pointerdown', this.onDown);
 
+    this.onWinResize = () => this.resize();
+    window.addEventListener('resize', this.onWinResize);
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(element);
     this.resize();
@@ -783,9 +821,33 @@ export class LightComponent {
     const w = this.el.clientWidth;
     const h = this.el.clientHeight;
     if (w === 0 || h === 0) return;
-    const span = 1 + 2 * this.bleed;
+    // Snap the canvas to whole CSS pixels (bleed rounded per axis) so its
+    // pixel grid lines up with the screen's — a percentage-sized canvas lands
+    // on fractional pixels, which resamples the 2px border into a soft line.
+    // re-read the pixel ratio so browser zoom / moving between displays
+    // re-renders the canvas at the new resolution instead of scaling it up
+    this.dpr = Math.min(window.devicePixelRatio || 1, this.maxDpr);
+    const bx = Math.round(w * this.bleed);
+    const by = Math.round(h * this.bleed);
+    const cw = w + 2 * bx;
+    const ch = h + 2 * by;
+    // The host box itself often sits on a fractional position (its width
+    // follows the label text, rows wrap at odd offsets). Shift the canvas by
+    // the difference to the nearest device pixel so its edges land exactly
+    // on the screen's pixel grid, the way the browser snaps text glyphs.
+    const rect = this.el.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const ox = Math.round(rect.left * dpr) / dpr - rect.left;
+    const oy = Math.round(rect.top * dpr) / dpr - rect.top;
+    Object.assign(this.canvas.style, {
+      left: `${-bx + ox}px`, top: `${-by + oy}px`,
+      width: `${cw}px`, height: `${ch}px`,
+    });
+    // keep the drawing buffer inside what GPUs allow (and sane in memory)
+    this.dpr = Math.min(this.dpr, 8192 / Math.max(cw, ch));
     this.renderer.setPixelRatio(this.dpr);
-    this.renderer.setSize(Math.round(w * span), Math.round(h * span), false);
+    this.renderer.setSize(cw, ch, false);
+    this.uniforms.u_canvasScale.value.set(cw / w, ch / h);
     // u_resolution stays element-sized: all shader params are element-relative
     this.uniforms.u_resolution.value.set(w * this.dpr, h * this.dpr);
   }
@@ -819,26 +881,32 @@ export class LightComponent {
 
   frame() {
     const now = performance.now() / 1000;
-    const dt = Math.min(now - this.lastTime, 0.1);
+    const tn = this.tune();
+    const dt = Math.min(now - this.lastTime, tn.maxDt);
+    for (const k of TUNE_UNIFORM_KEYS) this.uniforms['u_t_' + k].value = tn[k];
+    this.syncShape();
     this.lastTime = now;
 
     const def = this.def;
     const inter = def.interaction;
     const u = this.uniforms;
-    const speed = inter.speed || 6;
+    const speed = inter.speed || tn.defaultSpeed;
 
     this.hoverTarget = inter.hover && this.hovering ? 1 : 0;
     this.hoverT = damp(this.hoverT, this.hoverTarget, speed, dt);
-    this.pulse = Math.max(this.pulse - dt * 1.1, 0);
+    this.pulse = Math.max(this.pulse - dt * tn.pulseDecay, 0);
+    this.flash = Math.max(this.flash - dt * tn.flashDecay, 0);
+
 
     const rest = inter.lightPos || [0.5, 0.5];
     const lt = inter.cursorLight && this.hovering ? this.mouse : rest;
     this.lightT[0] = damp(this.lightT[0], lt[0], speed, dt);
     this.lightT[1] = damp(this.lightT[1], lt[1], speed, dt);
 
-    u.u_time.value = now;
+    u.u_time.value = now * tn.timeScale;
     u.u_hover.value = this.hoverT;
     u.u_pulse.value = this.pulse;
+    u.u_flash.value = this.flash;
     u.u_lightPos.value.set(this.lightT[0], this.lightT[1]);
     u.u_intensity.value = def.intensity == null ? 1 : def.intensity;
 
@@ -926,6 +994,7 @@ export class LightComponent {
   dispose() {
     cancelAnimationFrame(this.raf);
     this.ro.disconnect();
+    window.removeEventListener('resize', this.onWinResize);
     this.el.removeEventListener('pointerenter', this.onEnter);
     this.el.removeEventListener('pointerleave', this.onLeave);
     this.el.removeEventListener('pointermove', this.onMove);

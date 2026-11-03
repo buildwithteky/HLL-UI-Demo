@@ -50,20 +50,21 @@ export const BASE_DEFINITION = {
     "hover": true,
     "cursorLight": true,
     "clickPulse": false,
+    "clickFlash": true,
     "colorOnHover": true,
     "speed": 10,
     "lightPos": [
       0.5,
       0.5
     ],
-    "cursorFocusRadius": 1.75,
+    "cursorFocusRadius": 1,
     "cursorFocusEdge": 0.5,
-    "cursorRadius": 4,
     "cursorEdge": 1,
     "cursorAspect": 1,
-    "cursorExpand": 0.06,
-    "cursorColorLeak": 1,
-    "cursorTransparency": 0
+    "cursorExpand": 0,
+    "cursorColorLeak": 1.5,
+    "cursorTransparency": 0,
+    "cursorRadius": 7.5
   },
   "params": {
     "base": {
@@ -78,32 +79,33 @@ export const BASE_DEFINITION = {
       "fresnel": 0,
       "glowColor": "#E6E6E6",
       "glowIntensity": 0,
-      "glowRadius": 0.3,
+      "glowRadius": 0.1,
       "gradientAngle": 0,
       "noiseAmount": 0,
-      "noiseScale": 6,
-      "noiseSpeed": 0.3,
+      "noiseScale": 0,
+      "noiseSpeed": 0,
       "opacity": 1,
       "saturation": 1,
       "scatter": 0
     },
     "hover": {
-      "bloom": 0,
-      "blur": 1.5,
+      "bloom": 0.1,
+      "blur": 47,
       "chromatic": 0,
       "colors": [
-        "#10b981",
-        "#3b82f6"
+        "#ABBFFF",
+        "#2BB4EB",
+        "#076EB8"
       ],
       "fillOpacity": 1,
       "fresnel": 0,
-      "glowColor": "#10b981",
-      "glowIntensity": 0,
-      "glowRadius": 0.3,
+      "glowColor": "#ABBFFF",
+      "glowIntensity": 0.1,
+      "glowRadius": 0.45,
       "gradientAngle": 0,
       "noiseAmount": 0,
-      "noiseScale": 6,
-      "noiseSpeed": 0.3,
+      "noiseScale": 0,
+      "noiseSpeed": 0,
       "opacity": 1,
       "saturation": 1,
       "scatter": 0
@@ -120,7 +122,7 @@ export const BASE_DEFINITION = {
     "sides": 6,
     "rotation": 0,
     "maskSrc": null,
-    "strokeWidth": 0.06
+    "strokeWidth": 0.0556
   },
   "text": {
     "content": "DATA ENGINEERING",
