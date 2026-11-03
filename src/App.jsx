@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { HLLButton } from './components/hll-button';
-import { HLLOutlineButton } from './components/hll-outline-button';
+import { HLLOutlineButton, HLLOutlineButtonControls, createLiveDefinition, HLL_OUTLINE_BUTTON_VARIANT_NAMES } from './components/hll-outline-button';
 import { GradientRevealTextSlow } from './components/heading-anim-slow';
 import { GradientRevealTextNormal } from './components/heading-anim-normal';
 import { Ripple } from './components/ripple';
@@ -26,6 +26,12 @@ const dim = (active) => ({ opacity: active ? 1 : 0.5 });
 // hll-foundation/hll-ontology/hll-people/hll-application).
 export default function App() {
   const [group, setGroup] = useState('normal');
+  // One independent, fully editable definition per outline-button variant;
+  // the panel mutates them in place and the shader reads them every frame.
+  const [liveDefs] = useState(() =>
+    Object.fromEntries(HLL_OUTLINE_BUTTON_VARIANT_NAMES.map((v) => [v, createLiveDefinition(v)]))
+  );
+  const [, rerender] = useState(0);
 
   // Hash route: #/port-turnaround renders the page; anything else keeps the demo harness.
   if (window.location.hash === '#/port-turnaround') return <PortTurnaround />;
@@ -34,7 +40,7 @@ export default function App() {
   return (
     <>
       {/* Group switcher — only one button group is shown at a time */}
-      {/* <div
+      <div
         style={{
           position: 'fixed',
           top: 80,
@@ -61,14 +67,14 @@ export default function App() {
         >
           Outline
         </HLLOutlineButton>
-      </div> */}
+      </div>
 
       {/* Keeps the groups below where they were while the switcher is fixed */}
-      {/* <div style={{ height: 92 }} /> */}
+      <div style={{ height: 92 }} />
 
       {/* Buttons */}
 
-      {/* {group === 'normal' && (
+      {group === 'normal' && (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLButton variant="services">Services</HLLButton>
         <HLLButton variant="industries">Industries</HLLButton>
@@ -76,7 +82,7 @@ export default function App() {
         <HLLButton variant="about">About</HLLButton>
         <HLLButton variant="contact">Contact</HLLButton>
       </div>
-      )} */}
+      )}
 
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLButton variant="hll-ai">HLL AI</HLLButton>
@@ -87,16 +93,22 @@ export default function App() {
         <HLLButton variant="hll-application">HLL Application</HLLButton>
       </div> */}
 
-      {/* {group === 'outline' && (
+      {group === 'outline' && (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
-        <HLLOutlineButton variant="services">Services</HLLOutlineButton>
-        <HLLOutlineButton variant="industries">Industries</HLLOutlineButton>
-        <HLLOutlineButton variant="engagement">Engagement</HLLOutlineButton>
-        <HLLOutlineButton variant="about">About</HLLOutlineButton>
-        <HLLOutlineButton variant="contact">Contact</HLLOutlineButton>
-        <HLLOutlineButton variant="hll-ontology">Data Engineering</HLLOutlineButton>
+        <HLLOutlineButton variant="services" definition={liveDefs.services}>Services</HLLOutlineButton>
+        <HLLOutlineButton variant="industries" definition={liveDefs.industries}>Industries</HLLOutlineButton>
+        <HLLOutlineButton variant="engagement" definition={liveDefs.engagement}>Engagement</HLLOutlineButton>
+        <HLLOutlineButton variant="about" definition={liveDefs.about}>About</HLLOutlineButton>
+        <HLLOutlineButton variant="contact" definition={liveDefs.contact}>Contact</HLLOutlineButton>
+        <HLLOutlineButton variant="hll-ontology" definition={liveDefs['hll-ontology']}>Data Engineering</HLLOutlineButton>
       </div>
-      )} */}
+      )}
+      {group === 'outline' && (
+        <HLLOutlineButtonControls
+          targets={Object.entries(liveDefs).map(([id, def]) => ({ id, label: id, def }))}
+          onChange={() => rerender((x) => x + 1)}
+        />
+      )}
 
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="hll-ai">HLL AI</HLLOutlineButton>
@@ -183,7 +195,7 @@ export default function App() {
           defaults, same as the commented-out usage above) sitting directly
           on top of it at the bottom of the viewport. See
           bottom-shader/ServicesScrollDemo.jsx. */}
-      <ServicesScrollDemo />
+      {/* <ServicesScrollDemo /> */}
 
       {/* Services.png as a fullscreen backdrop with Shader mounted on top
           of it exactly as it renders by default — opaque, no blend mode.
