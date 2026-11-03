@@ -7,7 +7,7 @@ import { Ripple } from './components/ripple';
 import { CornerRipple } from './components/cornerripple';
 import { OurPromise } from './components/our-promise';
 import { Tag } from './components/tag';
-import { Shader, MenuTriggerOverlay } from './components/shader';
+import { Shader, MenuTriggerOverlay, ShaderPlayground } from './components/shader';
 import { BottomShader } from './components/bottom-shader';
 import PortTurnaround from './pages/port-turnaround';
 import PortTurnaroundDeck from './pages/port-turnaround-deck';
@@ -29,11 +29,12 @@ export default function App() {
 
   // Hash route: #/port-turnaround renders the page; anything else keeps the demo harness.
   if (window.location.hash === '#/port-turnaround') return <PortTurnaround />;
+  if (window.location.hash === '#/shader') return <ShaderPlayground />;
   if (window.location.hash === '#/port-turnaround-deck') return <PortTurnaroundDeck />;
   return (
     <>
       {/* Group switcher — only one button group is shown at a time */}
-      <div
+      {/* <div
         style={{
           position: 'fixed',
           top: 80,
@@ -60,14 +61,14 @@ export default function App() {
         >
           Outline
         </HLLOutlineButton>
-      </div>
+      </div> */}
 
       {/* Keeps the groups below where they were while the switcher is fixed */}
-      <div style={{ height: 92 }} />
+      {/* <div style={{ height: 92 }} /> */}
 
       {/* Buttons */}
 
-      {group === 'normal' && (
+      {/* {group === 'normal' && (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLButton variant="services">Services</HLLButton>
         <HLLButton variant="industries">Industries</HLLButton>
@@ -75,7 +76,7 @@ export default function App() {
         <HLLButton variant="about">About</HLLButton>
         <HLLButton variant="contact">Contact</HLLButton>
       </div>
-      )}
+      )} */}
 
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLButton variant="hll-ai">HLL AI</HLLButton>
@@ -86,7 +87,7 @@ export default function App() {
         <HLLButton variant="hll-application">HLL Application</HLLButton>
       </div> */}
 
-      {group === 'outline' && (
+      {/* {group === 'outline' && (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="services">Services</HLLOutlineButton>
         <HLLOutlineButton variant="industries">Industries</HLLOutlineButton>
@@ -95,7 +96,7 @@ export default function App() {
         <HLLOutlineButton variant="contact">Contact</HLLOutlineButton>
         <HLLOutlineButton variant="hll-ontology">Data Engineering</HLLOutlineButton>
       </div>
-      )}
+      )} */}
 
       {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: 24 }}>
         <HLLOutlineButton variant="hll-ai">HLL AI</HLLOutlineButton>
@@ -152,17 +153,17 @@ export default function App() {
 
       {/* Shader — fixed fullscreen by default (shader.css); only one should
           be mounted at a time, they'd otherwise stack on top of each other. */}
-      {/* <Shader variant="services" /> */}
-      {/* <Shader variant="industries" /> */}
-      {/* <Shader variant="engagement" /> */}
-      {/* <Shader variant="about" /> */}
-      {/* <Shader variant="contact" /> */}
-      {/* <Shader variant="hll-ai" /> */}
-      {/* <Shader variant="hll-trust" /> */}
-      {/* <Shader variant="hll-foundation" /> */}
-      {/* <Shader variant="hll-ontology" /> */}
-      {/* <Shader variant="hll-people" /> */}
-      {/* <Shader variant="hll-application" /> */}
+      {/* <Shader variant="services" controls /> */}
+      {/* <Shader variant="industries" controls /> */}
+      {/* <Shader variant="engagement" controls /> */}
+      {/* <Shader variant="about" controls /> */}
+      {/* <Shader variant="contact" controls /> */}
+      {/* <Shader variant="hll-ai" controls /> */}
+      {/* <Shader variant="hll-trust" controls /> */}
+      {/* <Shader variant="hll-foundation" controls /> */}
+      {/* <Shader variant="hll-ontology" controls /> */}
+      {/* <Shader variant="hll-people" controls /> */}
+      {/* <MenuTriggerOverlay variant="hll-application" controls /> */}
 
       {/* BottomShader — fixed to the bottom of the viewport, full width, by
           default (bottom-shader.css); only one should be mounted at a time. */}
@@ -182,7 +183,7 @@ export default function App() {
           defaults, same as the commented-out usage above) sitting directly
           on top of it at the bottom of the viewport. See
           bottom-shader/ServicesScrollDemo.jsx. */}
-      {/* <ServicesScrollDemo /> */}
+      <ServicesScrollDemo />
 
       {/* Services.png as a fullscreen backdrop with Shader mounted on top
           of it exactly as it renders by default — opaque, no blend mode.
