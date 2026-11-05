@@ -14,7 +14,8 @@ import { scrubImage, bindImageTrigger } from './image-reveal-core.js';
  *   as          element to render: 'img' when `src` is given, otherwise 'div' (wrapping children)
  *   mode        'scrub' (default) | 'fit' | 'trigger'
  *   scrub/fit:  rate (1), startOffset (0.97), heightRange (0.9), margin (0.08), maxBlur (16)
- *   trigger:    duration (1300 ms), delay (0 ms), easing, threshold (0.3), rootMargin ('0px 0px -8% 0px'), maxBlur
+ *   trigger:    duration (1300 ms), delay (0 ms), easing, threshold (0.3), rootMargin ('0px 0px -8% 0px'), maxBlur,
+ *              target (an element, e.g. its card, to watch instead of the image itself)
  *   blur        also blur while revealing (default true)
  *   className, style, …rest are passed to the element.
  * Progress is one-way: scrolling up never hides a revealed image; it resets only
@@ -24,7 +25,7 @@ export default function ImageReveal({
   as,
   mode = 'scrub',
   rate, startOffset, heightRange, margin,
-  duration, delay, easing, threshold, rootMargin,
+  duration, delay, easing, threshold, rootMargin, target,
   maxBlur,
   blur = true,
   children,
@@ -38,10 +39,10 @@ export default function ImageReveal({
     if (!el || prefersReducedMotion()) return undefined;
     const defined = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
     if (mode === 'trigger') {
-      return bindImageTrigger(el, defined({ duration, delay, easing, threshold, rootMargin, maxBlur, blur }));
+      return bindImageTrigger(el, defined({ duration, delay, easing, threshold, rootMargin, target, maxBlur, blur }));
     }
     return scrubImage(el, defined({ mode, rate, startOffset, heightRange, margin, maxBlur, blur }));
-  }, [mode, rate, startOffset, heightRange, margin, duration, delay, easing, threshold, rootMargin, maxBlur, blur]);
+  }, [mode, rate, startOffset, heightRange, margin, duration, delay, easing, threshold, rootMargin, target, maxBlur, blur]);
 
   return <Tag ref={ref} {...rest}>{children}</Tag>;
 }

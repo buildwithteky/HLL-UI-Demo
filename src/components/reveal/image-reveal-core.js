@@ -144,7 +144,8 @@ export const IMAGE_TRIGGER_DEFAULTS = {
   delay: 0,                                // ms
   easing: 'cubic-bezier(.22, 1, .36, 1)',
   maxBlur: 16,                             // px
-  threshold: 0.3,                          // fraction of the element that must be visible
+  threshold: 0.3,                          // fraction of the trigger element that must be visible
+  target: null,                            // element to watch instead of the image itself (e.g. its card)
   rootMargin: '0px 0px -8% 0px',           // inset from the viewport edges
 };
 
@@ -174,7 +175,9 @@ export function bindImageTrigger(el, userOptions) {
       else if (!e.isIntersecting) set(e.boundingClientRect.top < 0); // above: shown, below: reset
     }
   }, { threshold: o.threshold > 0 ? [0, o.threshold] : 0, rootMargin: o.rootMargin });
-  observer.observe(el);
+  // `target` lets a larger container (a card) decide when the image plays, so
+  // the threshold is a fraction of the card, not of the (smaller) image.
+  observer.observe(o.target || el);
   return () => {
     observer.disconnect();
     el.style.clipPath = ''; el.style.filter = ''; el.style.transition = '';

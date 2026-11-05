@@ -187,7 +187,9 @@ export function useCardReveal(rootRef, { card, text, image, textOptions, imageOp
         observer.observe(words[0].parentElement.parentElement, words);
       }
       const img = image && cardEl.querySelector(image);
-      if (img) stops.push(bindImageTrigger(img, { blur: true, ...imageOptions }));
+      // The card (not the smaller photo) is the trigger, so the photo plays as
+      // soon as the card is entering the viewport.
+      if (img) stops.push(bindImageTrigger(img, { blur: true, target: cardEl, ...imageOptions }));
     });
 
     return () => {
