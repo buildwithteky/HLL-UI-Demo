@@ -10,7 +10,7 @@ import { HLLButton } from '../../components/hll-button';
 import { HLLOutlineButton } from '../../components/hll-outline-button';
 import { Tag } from '../../components/tag';
 import { Workbench } from '../../components/workbench';
-import '../../components/our-promise/our-promise.css'; // registers Aeonik Light + Sometype Mono
+import '../../fonts/fonts.css'; // registers Aeonik Light + Sometype Mono
 import './port-turnaround.css';
 
 const STEPS = ['Problem', 'Approach', 'Demo'];
