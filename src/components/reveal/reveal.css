@@ -1,0 +1,23 @@
+/* reveal.css — styles for the reusable text + image reveal animations.
+   Every timing/amount is a CSS custom property, so a single instance can be
+   tuned (inline style or props) without touching the defaults below. */
+
+/* Text reveal: one word. Visible by default; .is-hidden is the pre-reveal state. */
+.reveal-word {
+  display: inline-block;
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+  transition:
+    opacity var(--reveal-opacity-ms, 150ms) linear,
+    filter var(--reveal-blur-ms, 220ms) linear,
+    transform var(--reveal-transform-ms, 450ms) var(--reveal-ease, cubic-bezier(.075, .82, .165, 1));
+}
+.reveal-word.is-hidden {
+  opacity: var(--reveal-hidden-opacity, .4);
+  filter: blur(var(--reveal-hidden-blur, 15px));
+  transform: scale(var(--reveal-hidden-scale, .85));
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-word { transition: none; }
+}
