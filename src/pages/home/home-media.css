@@ -1,0 +1,17 @@
+/* home-media.css — the website's scroll-effect styles (globals.css), for the
+   media variant only. */
+.line-draw-in { transform: scaleX(.001); transform-origin: left center; transition: transform 1100ms cubic-bezier(.22, 1, .36, 1); }
+.line-draw-in.is-visible { transform: scaleX(1); }
+.hm-hww__line { display: none; height: 1px; margin: 0 -12px 32px; background: var(--hm-mid); }
+@media (width < 64rem) { .hm-hww__line { display: block; } }
+
+/* Page intro: until the <h1> finishes revealing only it shows, then the rest fades in. */
+main[data-intro="pending"] :has(h1) > :not(:has(h1)):not(h1) { visibility: hidden; }
+main[data-intro="done"] :has(h1) > :not(:has(h1)):not(h1) { animation: hm-page-intro-in 700ms cubic-bezier(.22, 1, .36, 1) backwards; }
+@keyframes hm-page-intro-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .line-draw-in { transform: none; transition: none; }
+  main[data-intro="done"] :has(h1) > :not(:has(h1)):not(h1) { animation: none; }
+}
+.hm-page h1 { margin: 0; font-size: inherit; }

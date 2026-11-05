@@ -5,10 +5,10 @@ import { GradientRevealTextSlow } from './components/heading-anim-slow';
 import { GradientRevealTextNormal } from './components/heading-anim-normal';
 import { Ripple } from './components/ripple';
 import { CornerRipple } from './components/cornerripple';
-import { OurPromise } from './components/our-promise';
 import { Tag } from './components/tag';
 import { Shader, MenuTriggerOverlay, ShaderPlayground } from './components/shader';
 import { BottomShader } from './components/bottom-shader';
+import HomeMedia from './pages/home';
 import PortTurnaround from './pages/port-turnaround';
 import PortTurnaroundDeck from './pages/port-turnaround-deck';
 import ServicesScrollDemo from './components/bottom-shader/ServicesScrollDemo.jsx';
@@ -34,6 +34,8 @@ export default function App() {
   const [, rerender] = useState(0);
 
   // Hash route: #/port-turnaround renders the page; anything else keeps the demo harness.
+  // The home page is the media variant; '#/home' is kept as an alias.
+  if (window.location.hash === '#/home' || window.location.hash === '#/home-media') return <HomeMedia />;
   if (window.location.hash === '#/port-turnaround') return <PortTurnaround />;
   if (window.location.hash === '#/shader') return <ShaderPlayground />;
   if (window.location.hash === '#/port-turnaround-deck') return <PortTurnaroundDeck />;
@@ -161,7 +163,6 @@ export default function App() {
       {/* <Tag variant="warm">Warm</Tag>
       <Tag variant="cool">Cool</Tag> */}
 
-      {/* <OurPromise/> */}
 
       {/* Shader — fixed fullscreen by default (shader.css); only one should
           be mounted at a time, they'd otherwise stack on top of each other. */}
