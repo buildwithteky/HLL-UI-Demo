@@ -7,11 +7,12 @@
 
 /* Page intro: until the <h1> finishes revealing only it shows, then the rest fades in. */
 main[data-intro="pending"] :has(h1) > :not(:has(h1)):not(h1) { visibility: hidden; }
-main[data-intro="done"] :has(h1) > :not(:has(h1)):not(h1) { animation: hm-page-intro-in 700ms cubic-bezier(.22, 1, .36, 1) backwards; }
+/* The hero window is excluded: its own blur + height scrub (image-reveal-core, from index-top.html) is its only entrance. */
+main[data-intro="done"] :has(h1) > :not(:has(h1)):not(h1):not(.hm-hero__window) { animation: hm-page-intro-in 700ms cubic-bezier(.22, 1, .36, 1) backwards; }
 @keyframes hm-page-intro-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .line-draw-in { transform: none; transition: none; }
-  main[data-intro="done"] :has(h1) > :not(:has(h1)):not(h1) { animation: none; }
+  main[data-intro="done"] :has(h1) > :not(:has(h1)):not(h1):not(.hm-hero__window) { animation: none; }
 }
 .hm-page h1 { margin: 0; font-size: inherit; }
