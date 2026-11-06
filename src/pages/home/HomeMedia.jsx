@@ -668,9 +668,9 @@ function ImpactTile({ slot, mobile }) {
   const c = IMPACT.cards[slot.card];
   const ratio = mobile && slot.mobileH ? `386 / ${slot.mobileH}` : `${slot.wide ? 991 : 490} / ${slot.mediaH}`;
   return (
-    <article className="hm-card">
+    <article className="hm-card" data-impact-card>
       <a href="#/home-media">
-        <div className="hm-card__media" style={{ aspectRatio: ratio, ...(c.image ? { background: `#d9d9d9 url(${c.image}) center / cover` } : null) }}>
+        <div className="hm-card__media" data-no-image-reveal style={{ aspectRatio: ratio, ...(c.image ? { background: `#d9d9d9 url(${c.image}) center / cover` } : null) }}>
           <span aria-hidden className="hm-card__arrow">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M7 17 17 7M8 7h9v9" /></svg>
           </span>
@@ -923,6 +923,8 @@ export default function HomeMedia() {
   useTextReveal(pageRef, { skip: TEXT_REVEAL_SKIP });
   // Team cards: selectors say which element is the card, its text and its image.
   useCardReveal(pageRef, { card: '[data-reveal-card]', text: '.hm-team__name, .hm-label', image: '.hm-team__photo' });
+  // Impact cards: same time-based, viewport-triggered image reveal as the Team photos (image only; their text stays on the page-wide text hook).
+  useCardReveal(pageRef, { card: '[data-impact-card]', image: '.hm-card__media' });
   useLineReveal(pageRef);
   usePageIntro(mainRef);
   return (
