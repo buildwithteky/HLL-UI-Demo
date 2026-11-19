@@ -82,7 +82,7 @@ import { GradientRevealTextSlow } from '../../components/heading-anim-slow';
 import { HLLButton } from '../../components/hll-button';
 import { HLLOutlineButton } from '../../components/hll-outline-button';
 import { Shader, BASE_SETTINGS as SHADER_BASE } from '../../components/shader';
-import { BottomShader, BASE_SETTINGS } from '../../components/bottom-shader';
+import { BottomShader, BASE_SETTINGS, getBlendShaderProps } from '../../components/bottom-shader';
 import { makeBottomShaderLayout } from '../../components/bottom-shader/bottom-shader-definition.js';
 import '../../fonts/fonts.css'; // registers Aeonik + Sometype Mono
 import './home.css';
@@ -253,13 +253,20 @@ function Header() {
    hard-light-blended BottomShader pinned to the bottom of the screen, which
    crossfades (0.6s) to a second, unblended, finer-shatter layer at the true
    end of the page. Home has no section palette, so it runs the Figma Home
-   footer's pink and peach. */
-const HOME_SHADER_COLORS = ['#F49AB1', '#F483A6', '#F5CAA3'];
-const DEMO_SETTINGS = {
+   footer's pink and peach.
+
+   Colour system (palette in Home's HSB band, palette-hued fade, hard-light
+   behaviour over white/text) lives in bottom-shader-palette.js; the blend layer
+   takes its colours and settings from getBlendShaderProps(). Other pages call
+   it with their own variant name. The end-of-page layer is an unblended plate
+   and keeps its own settings. */
+const DEMO_BASE_SETTINGS = {
   ...BASE_SETTINGS,
   background: { color: '#ffffff', transparent: true },
   tune: { ...BASE_SETTINGS.tune, vignetteFollow: 0.9 },
 };
+// Built once at module level so BottomShader's effect never sees a new settings identity.
+const { colors: HOME_BLEND_COLORS, settings: DEMO_SETTINGS } = getBlendShaderProps(undefined, DEMO_BASE_SETTINGS);
 const DEMO_END_SETTINGS = {
   ...BASE_SETTINGS,
   background: { color: '#ffffff', transparent: true },
@@ -333,7 +340,7 @@ function ScreenShader() {
     <>
       <BottomShader
         variant="contact"
-        colors={HOME_SHADER_COLORS}
+        colors={HOME_BLEND_COLORS}
         settings={DEMO_SETTINGS}
         layout={DEMO_LAYOUT}
         overlay
@@ -343,7 +350,7 @@ function ScreenShader() {
       {nearEnd || warm ? (
         <BottomShader
           variant="contact"
-          colors={HOME_SHADER_COLORS}
+          colors={HOME_BLEND_COLORS}
           settings={DEMO_END_SETTINGS}
           layout={DEMO_END_LAYOUT}
           pauseOnDoubleClick={false}
