@@ -7,3 +7,4 @@ export {
   resolveVariantColors,
 } from './bottom-shader-variants.js';
 export { BASE_SETTINGS, MULTIPLIER, BLUE_NOISE_SIZE } from '../shader/shader-definition.js';
+export { HOME_SHADER_COLORS, toHomeBand, paletteFadeColour, getBlendShaderProps } from './bottom-shader-palette.js';
