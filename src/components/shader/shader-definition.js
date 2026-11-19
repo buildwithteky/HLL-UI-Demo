@@ -11,6 +11,10 @@ export const MULTIPLIER = 0.6; // render resolution scale relative to the
 
 export const BLUE_NOISE_SIZE = 256;
 
+// background.fadeColor (optional, not set here): what the vignette fades out to. Defaults to background.color
+// (white). The Bottom Shader's blend layer sets it to the palette's hue so a thinning layer stays a saturated tint
+// under hard-light instead of draining to grey over dark content. Only the vignette's clear colour uses it;
+// background.color still drives the output base and the canvas clear.
 export const BASE_SETTINGS = {
   background: { color: "#ffffff", transparent: true },
   vignette: { radius: 1, falloff: 1, displace: 0, mix: 1, angle: 0, skew: 0.54 },

@@ -444,6 +444,11 @@ export function createShaderFX(canvas, options = {}) {
   };
   let bgColorVec = colorVec(settings.background.color);
   let outputColorVec = colorVec(settings.output.color);
+  // What the vignette fades out to. Optional `background.fadeColor` (see shader-definition.js); unset means the
+  // background colour, so every surface that does not set it behaves exactly as before.
+  const fadeOf = () => settings.background.fadeColor || settings.background.color;
+  let fadeColorVec = colorVec(fadeOf());
+  let lastFade = fadeOf();
   let lastBg = settings.background.color, lastOut = settings.output.color;
   let appliedScale = null, appliedDpr = null;
   const currentScale = () => num(T.renderScale, options.multiplier ?? 0.6);
@@ -519,7 +524,7 @@ export function createShaderFX(canvas, options = {}) {
     setF(u, 'uHalfF', T.vignetteHalfFactor);
     setF(u, 'uFalloffF', T.vignetteFalloffFactor);
     set2(u, 'uPos', [lerp(T.vignetteX, currPointer[0], T.vignetteFollow), lerp(T.vignetteY, currPointer[1], T.vignetteFollow)]);
-    set3(u, 'uClearColor', bgColorVec);
+    set3(u, 'uClearColor', fadeColorVec);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     drawQuad();
@@ -652,6 +657,7 @@ export function createShaderFX(canvas, options = {}) {
 
     refreshTune();
     if (settings.background.color !== lastBg) { lastBg = settings.background.color; bgColorVec = colorVec(lastBg); }
+    if (fadeOf() !== lastFade) { lastFade = fadeOf(); fadeColorVec = colorVec(lastFade); }
     if (settings.output.color !== lastOut) { lastOut = settings.output.color; outputColorVec = colorVec(lastOut); }
     if (currentScale() !== appliedScale || T.dprCap !== appliedDpr) resize();
 
